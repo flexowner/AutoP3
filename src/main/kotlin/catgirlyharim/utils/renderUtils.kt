@@ -10,6 +10,7 @@ import net.minecraft.util.BlockPos
 import net.minecraft.util.Vec3
 import org.lwjgl.opengl.GL11
 import java.awt.Color
+import kotlin.math.round
 
 object WorldRenderUtils {
 
@@ -193,5 +194,30 @@ object WorldRenderUtils {
         GlStateManager.enableTexture2D()
         GlStateManager.enableDepth()
         GlStateManager.disableBlend()
+    }
+    fun renderText(
+        text: String,
+        x: Int,
+        y: Int,
+        scale: Double = 1.0,
+        color: Int = 0xFFFFFF,
+    ) {
+        GlStateManager.pushMatrix()
+        GlStateManager.disableLighting()
+        GlStateManager.disableDepth()
+        GlStateManager.disableBlend()
+        GlStateManager.scale(scale, scale, scale)
+        var yOffset = y - mc.fontRendererObj.FONT_HEIGHT
+        text.split("\n").forEach {
+            yOffset += (mc.fontRendererObj.FONT_HEIGHT * scale).toInt()
+            mc.fontRendererObj.drawString(
+                it,
+                round(x / scale).toFloat(),
+                round(yOffset / scale).toFloat(),
+                color,
+                true
+            )
+        }
+        GlStateManager.popMatrix()
     }
 }

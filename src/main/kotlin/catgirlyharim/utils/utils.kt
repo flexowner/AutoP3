@@ -4,13 +4,19 @@ import catgirlyharim.CatgirlYharim.Companion.mc
 import catgirlyharim.utils.MovementUtils.restartMovement
 import catgirlyharim.config.MyConfig.hclipDistance
 import catgirlyharim.events.MovementUpdateEvent
+import catgirlyharim.events.ReceivePacketEvent
 import catgirlyharim.utils.MovementUtils.stopMovement
+import catgirlyharim.utils.Utils.relativeClip
+import catgirlyharim.utils.WorldRenderUtils.renderText
+import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.item.ItemStack
 import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
+import net.minecraft.network.play.server.S12PacketEntityVelocity
+import net.minecraftforge.client.event.RenderGameOverlayEvent
+import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import kotlin.math.cos
-import kotlin.math.sin
+import kotlin.math.*
 
 object Utils {
 
@@ -53,6 +59,26 @@ object Utils {
     fun airClick() {
         mc.netHandler.networkManager.sendPacket(C08PacketPlayerBlockPlacement(mc.thePlayer.heldItem))
     }
+
+    fun relativeClip(x: Float, y: Float, z: Float) {
+        mc.thePlayer.setPosition(mc.thePlayer.posX + x,mc.thePlayer.posY + y,mc.thePlayer.posZ + z)
+    }
+
+    fun getYawAndPitch(x: Float, y:Float, z:Float): Pair<Float, Float> {
+        val dx = x - mc.thePlayer.posX   // Difference in x
+        val dy = y - mc.thePlayer.posY  // Difference in y
+        val dz = z - mc.thePlayer.posZ   // Difference in z
+
+        val horizontalDistance = sqrt(dx * dx + dz * dz )
+
+        val yaw = Math.toDegrees(atan2(-dx, dz))
+        val pitch = Math.toDegrees(atan2(dy, horizontalDistance))
+
+        val normalizedYaw = if (yaw < 0) yaw + 360 else yaw
+
+        return Pair(normalizedYaw.toFloat(), pitch.toFloat())
+    }
+
 }
 
 object Hclip {
@@ -82,6 +108,54 @@ object Hclip {
             restartMovement()
 
             pendingHclip = false
+        }
+    }
+}
+
+object lavaClip {
+    var lavaclipping = false
+    var veloReceived = true
+    var lavaClipDistance: Float = 40f
+
+    @SubscribeEvent
+    fun onRender(event: RenderWorldLastEvent) {
+        if (!lavaclipping || !mc.thePlayer.isInLava) return
+            lavaclipping = false
+        relativeClip(0f, -lavaClipDistance, 0f)
+    }
+
+    @SubscribeEvent
+    fun onPacket(event: ReceivePacketEvent) {
+        if (veloReceived) return
+        if (event.packet !is S12PacketEntityVelocity) return
+        if (event.packet.entityID != mc.thePlayer.entityId) return
+        if (event.packet.motionY == 28000) {
+            event.isCanceled = true
+            veloReceived = true
+    }
+    }
+
+    @SubscribeEvent
+    fun onOverlay(event: RenderGameOverlayEvent.Post) {
+        if (event.type != RenderGameOverlayEvent.ElementType.HOTBAR || !lavaclipping || mc.ingameGUI == null) return
+        val sr = ScaledResolution(mc)
+        val text = "Lava clipping $lavaClipDistance"
+        val width = sr.scaledWidth / 2 - mc.fontRendererObj.getStringWidth(text) / 2
+        renderText(
+            text = text,
+            x = width,
+            y = sr.scaledHeight / 2 + 10
+        )
+    }
+
+    fun toggleLavaClip(distance: Float) {
+        lavaClipDistance = round(distance)
+        if (!lavaclipping) {
+            lavaclipping = true
+            veloReceived = false
+        } else {
+            lavaclipping = false
+            veloReceived = true
         }
     }
 }

@@ -11,11 +11,13 @@ import catgirlyharim.utils.MovementUtils.stopVelo
 import catgirlyharim.utils.ServerRotateUtils.resetRotations
 import catgirlyharim.utils.ServerRotateUtils.set
 import catgirlyharim.utils.Utils.airClick
+import catgirlyharim.utils.Utils.getYawAndPitch
 import catgirlyharim.utils.Utils.leftClick
 import catgirlyharim.utils.Utils.rotate
 import catgirlyharim.utils.Utils.sendChat
 import catgirlyharim.utils.Utils.swapFromName
 import catgirlyharim.utils.WorldRenderUtils.drawP3box
+import catgirlyharim.utils.lavaClip.toggleLavaClip
 import net.minecraft.command.CommandBase
 import net.minecraft.command.ICommandSender
 import net.minecraftforge.client.event.ClientChatReceivedEvent
@@ -40,7 +42,7 @@ data class PushParams(
     var lookX: Float = 0f,
     var lookY: Float = 0f,
     var lookZ: Float = 0f,
-    var action: Float = 0f,
+    var depth: Float = 0f,
     var stopping: Boolean = false,
     var looking: Boolean = false,
     var walking: Boolean = false,
@@ -65,7 +67,7 @@ object AutoP3 {
             inp3 = true
             sendChat("start")
         }
-        if (message == "[BOSS] Goldor: You have done it, you destroyed the factory…") { // Change to necron death
+        if (message.contains("[BOSS] Goldor: You have done it, you destroyed the factory…")) { // Change to necron death
             inp3 = false
         }
     }
@@ -98,9 +100,10 @@ object AutoP3 {
             val distanceX = abs(playerX - ring.x)
             val distanceY = (playerY - ring.y)
             val distanceZ = abs(playerZ - ring.z)
-            if ((distanceX > (ring.width / 2) || (distanceY > (ring.height) || distanceY < 0) || distanceZ > (ring.width / 2))) {
+            if ((distanceX > (ring.width / 2) || (distanceY >= (ring.height - 0.5) || distanceY < 0) || distanceZ > (ring.width / 2))) {
                 ring.active = true
             } else if (ring.active){
+                ring.active = false
                 when (ring.type) {
                     "look" -> rotate(ring.yaw, ring.pitch)
                     "stop" -> {
@@ -136,11 +139,14 @@ object AutoP3 {
                             }
                         }
                     }
-                    "vclip" -> yellow
-                    "block" -> darkGray
-                    "edge" -> pink
-                    "blue" -> blue
-                    else -> black
+                    "vclip" -> toggleLavaClip(ring.depth)
+                    "block" -> {
+                        var (yaw, pitch) = getYawAndPitch(ring.lookX, ring.lookY, ring.lookZ)
+                        rotate(yaw, pitch)
+                    }
+                    "edge" -> sendChat("1")
+                    "blue" -> sendChat("1")
+                    else -> sendChat("1")
                 }
             }
         }
@@ -180,18 +186,29 @@ object P3Command : CommandBase() {
                 val z = (Math.round(mc.renderManager.viewerPosZ * 2) / 2).toFloat()
                 val yaw = mc.renderManager.playerViewY
                 val pitch = mc.renderManager.playerViewX
-                if (args.size >= 5) {
-                    val lookX = parseFloat(args[2])
-                    val lookY = parseFloat(args[3])
-                    val lookZ = parseFloat(args[4])
+                var lookX = 0f
+                var lookY = 0f
+                var lookZ = 0f
+                if (args.size > 3 && type == "block") {
+                    lookX = parseFloat(args[2])
+                    lookY = parseFloat(args[3])
+                    lookZ = parseFloat(args[4])
                 }
-                if (type == "vclip" && args.size >= 3) {
-                    val action = args[2]
+                var depth = 0f
+                if (type == "vclip" && args.size > 2) {
+                    depth = parseFloat(args[2])
                 }
                 val h = 1f
                 val w = 1f
-
                 var toPush = PushParams(type = type, active = active, route = route, x = x, y = y, z = z, height = h, width = w)
+                if (type == "block") {
+                    toPush.lookX = lookX
+                    toPush.lookY = lookY
+                    toPush.lookZ = lookZ
+                }
+                if (type == "vclip") {
+                    toPush.depth = depth
+                }
 
                 args.drop(2).forEachIndexed { index, arg ->
                     when {
