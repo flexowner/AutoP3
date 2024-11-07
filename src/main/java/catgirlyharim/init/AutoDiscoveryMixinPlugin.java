@@ -1,4 +1,4 @@
-package com.github.turtleonfire2.cgy.init;
+package catgirlyharim.init;
 
 import org.spongepowered.asm.lib.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
