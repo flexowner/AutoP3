@@ -8,6 +8,8 @@ import catgirlyharim.utils.lavaClip.toggleLavaClip
 import cc.polyfrost.oneconfig.config.Config
 import cc.polyfrost.oneconfig.config.annotations.KeyBind
 import cc.polyfrost.oneconfig.config.annotations.Slider
+import cc.polyfrost.oneconfig.config.annotations.Switch
+import cc.polyfrost.oneconfig.config.annotations.Text
 import cc.polyfrost.oneconfig.config.core.OneKeyBind
 import cc.polyfrost.oneconfig.config.data.Mod
 import cc.polyfrost.oneconfig.config.data.ModType
@@ -36,6 +38,17 @@ object MyConfig : Config(Mod("My Mod", ModType.SKYBLOCK), "config.json") {
         step = 1
     )
     var lavaClipDistanceKeyBind: Float = 30f;
+
+    @Switch(name = "Editmode")
+    var editmode = true
+
+    @Text(
+        name = "Route",
+        placeholder = "Select a route!",
+        secure = false,
+        multiline = false
+    )
+    var selectedRoute = ""
 
     init {
         initialize()

@@ -1,8 +1,10 @@
 package catgirlyharim.features
 
 import catgirlyharim.CatgirlYharim.Companion.mc
+import catgirlyharim.config.MyConfig.editmode
+import catgirlyharim.config.MyConfig.selectedRoute
+import catgirlyharim.features.AutoP3.inp3
 import catgirlyharim.features.AutoP3.rings
-import catgirlyharim.features.AutoP3.selectedRoute
 import catgirlyharim.utils.ClientListener.scheduleTask
 import catgirlyharim.utils.Hclip.hclip
 import catgirlyharim.utils.MovementUtils.jump
@@ -11,18 +13,22 @@ import catgirlyharim.utils.MovementUtils.stopVelo
 import catgirlyharim.utils.ServerRotateUtils.resetRotations
 import catgirlyharim.utils.ServerRotateUtils.set
 import catgirlyharim.utils.Utils.airClick
+import catgirlyharim.utils.Utils.distanceToPlayer
 import catgirlyharim.utils.Utils.getYawAndPitch
 import catgirlyharim.utils.Utils.leftClick
+import catgirlyharim.utils.Utils.modMessage
 import catgirlyharim.utils.Utils.rotate
 import catgirlyharim.utils.Utils.sendChat
 import catgirlyharim.utils.Utils.swapFromName
-import catgirlyharim.utils.WorldRenderUtils.drawCustomSizedBoxAt
-import catgirlyharim.utils.WorldRenderUtils.drawP3box
 import catgirlyharim.utils.WorldRenderUtils.drawSquareTwo
 import catgirlyharim.utils.edgeJump.toggleEdging
 import catgirlyharim.utils.lavaClip.toggleLavaClip
 import net.minecraft.command.CommandBase
 import net.minecraft.command.ICommandSender
+import net.minecraft.event.ClickEvent
+import net.minecraft.event.HoverEvent
+import net.minecraft.util.ChatComponentText
+import net.minecraft.util.ChatStyle
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
@@ -34,7 +40,7 @@ import kotlin.math.abs
 data class PushParams(
     var type: String = "",
     var active: Boolean = true,
-    var route: Boolean = true,
+    var route: String = "",
     var x: Float = 0f,
     var y: Float = 0f,
     var z: Float = 0f,
@@ -60,7 +66,6 @@ data class PushParams(
 object AutoP3 {
     var inp3 = false
     var cooldowm = false
-    var selectedRoute = true
     var rings = mutableListOf<PushParams>()
 
     @SubscribeEvent
@@ -68,10 +73,11 @@ object AutoP3 {
         val message = event.message.unformattedText
         if (message.contains("[BOSS] Storm: I should have known that I stood no chance.")) {
             inp3 = true
-            sendChat("start")
+            //modMessage("P3 started!")
         }
         if (message.contains("[BOSS] Goldor: You have done it, you destroyed the factory…")) { // Change to necron death
             inp3 = false
+            //modMessage("P3 ended!")
         }
     }
 
@@ -93,7 +99,10 @@ object AutoP3 {
                 else -> black
             }
             if (ring.active) {
-            drawSquareTwo(ring.x.toDouble(), ring.y.toDouble(), ring.z.toDouble(), ring.width.toDouble(), ring.width.toDouble(), color, 3f, true, true)
+                drawSquareTwo(ring.x.toDouble(), ring.y.toDouble(), ring.z.toDouble(), ring.width.toDouble(), ring.width.toDouble(), color, 3f, false, true)
+                drawSquareTwo(ring.x.toDouble(), ring.y.toDouble() + ring.height / 2, ring.z.toDouble(), ring.width.toDouble(), ring.width.toDouble(), color, 3f, false, true)
+                drawSquareTwo(ring.x.toDouble(), ring.y.toDouble() + ring.height, ring.z.toDouble(), ring.width.toDouble(), ring.width.toDouble(), color, 3f, false, true)
+
             }
 
             val playerX = mc.renderManager.viewerPosX
@@ -104,7 +113,7 @@ object AutoP3 {
             val distanceZ = abs(playerZ - ring.z)
             if ((distanceX > (ring.width / 2) || (distanceY >= (ring.height - 0.5) || distanceY < 0) || distanceZ > (ring.width / 2))) {
                 ring.active = true
-            } else if (ring.active){
+            } else if (ring.active && !editmode){
                 ring.active = false
                 when (ring.type) {
                     "look" -> rotate(ring.yaw, ring.pitch)
@@ -174,7 +183,7 @@ object P3Command : CommandBase() {
 
     override fun processCommand(sender: ICommandSender?, args: Array<String>) {
         if (args.isEmpty()) {
-            sendChat("empty")
+            modMessage("No argument specified!")
             return
         }
 
@@ -212,10 +221,6 @@ object P3Command : CommandBase() {
                     toPush.depth = depth
                 }
 
-                sendChat(x.toString())
-                sendChat(y.toString())
-                sendChat(z.toString())
-
                 args.drop(2).forEachIndexed { index, arg ->
                     when {
                         arg.startsWith("h") -> toPush.height = arg.slice(1 until arg.length).toFloat()
@@ -239,7 +244,56 @@ object P3Command : CommandBase() {
                 }
                 rings.add(toPush)
             }
+            "edit" -> {
+                if (editmode) {
+                    editmode = false
+                    modMessage("Editmode off!")
+                } else {
+                    editmode = true
+                    modMessage("Editmode on!")
+                }
+            }
+            "start" -> {
+                inp3 = true
+                modMessage("P3 started!")
+            }
+            "stop" -> {
+                inp3 = false
+                modMessage("P3 stopped!")
+            }
+            "remove" -> {
+                val range = args.getOrNull(1)?.toDoubleOrNull() ?: 2.0 // Default range to 2 if not provided
+                AutoP3.rings = rings.filter { ring ->
+                    // Filter rings based on the route and distance criteria
+                    if (ring.route != selectedRoute) return@filter true
+                    val distance = distanceToPlayer(ring.x, ring.y, ring.z)
+                    distance >= range
+                }.toMutableList()
+            }
+            "undo" -> {
+                AutoP3.rings.removeLast()
+            }
+            "clear" -> {
+                val prefix: String = "§0[§6Yharim§0] §8»§r "
+                sender?.addChatMessage(ChatComponentText("$prefix Are you sure?")
+                    .apply {
+                        chatStyle = ChatStyle().apply {
+                            chatClickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/p3 clearconfirm")
+                            chatHoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, ChatComponentText("$prefix Click to clear ALL routes!"))
+                        }
+                    })
+            }
+            "clearconfirm" -> {
+                AutoP3.rings = mutableListOf<PushParams>()
+                modMessage("Cleared route")
+            }
+            "load" -> {
+                val route = args[1]
+                selectedRoute = route
+                modMessage("Loaded route $route")
+            }
         }
     }
+
 }
 

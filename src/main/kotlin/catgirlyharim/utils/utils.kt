@@ -17,6 +17,8 @@ import net.minecraft.item.ItemStack
 import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
 import net.minecraft.network.play.server.S12PacketEntityVelocity
 import net.minecraft.util.BlockPos
+import net.minecraft.util.ChatComponentText
+import net.minecraft.util.ChatStyle
 import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
@@ -30,6 +32,15 @@ object Utils {
         mc.thePlayer.sendChatMessage(message)
     }
 
+    fun runOnMCThread(run: () -> Unit) {
+        if (!mc.isCallingFromMinecraftThread) mc.addScheduledTask(run) else run()
+    }
+
+    fun modMessage(message: Any?, prefix: String = "§0[§6Yharim§0] §8»§r ", chatStyle: ChatStyle? = null) {
+        val chatComponent = ChatComponentText("$prefix$message")
+        chatStyle?.let { chatComponent.setChatStyle(it) } // Set chat style using setChatStyle method
+        runOnMCThread { mc.thePlayer?.addChatMessage(chatComponent) }
+    }
 
     //player
 
@@ -82,6 +93,13 @@ object Utils {
         val normalizedYaw = if (yaw < 0) yaw + 360 else yaw
 
         return Pair(normalizedYaw.toFloat(), pitch.toFloat())
+    }
+
+    fun distanceToPlayer(x: Float, y: Float, z: Float): Double {
+        return sqrt((mc.renderManager.viewerPosX - x) * (mc.renderManager.viewerPosX - x) +
+                    (mc.renderManager.viewerPosY - y) * (mc.renderManager.viewerPosY - y) +
+                    (mc.renderManager.viewerPosZ - z) * (mc.renderManager.viewerPosZ - z)
+        )
     }
 
 }
