@@ -5,14 +5,18 @@ import catgirlyharim.utils.MovementUtils.restartMovement
 import catgirlyharim.config.MyConfig.hclipDistance
 import catgirlyharim.events.MovementUpdateEvent
 import catgirlyharim.events.ReceivePacketEvent
+import catgirlyharim.utils.MovementUtils.jump
 import catgirlyharim.utils.MovementUtils.stopMovement
 import catgirlyharim.utils.Utils.relativeClip
+import catgirlyharim.utils.Utils.sendChat
 import catgirlyharim.utils.WorldRenderUtils.renderText
+import net.minecraft.block.Block
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.item.ItemStack
 import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
 import net.minecraft.network.play.server.S12PacketEntityVelocity
+import net.minecraft.util.BlockPos
 import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
@@ -23,8 +27,9 @@ object Utils {
     //chat
 
     fun sendChat(message: String) {
-        mc.thePlayer?.sendChatMessage(message)
+        mc.thePlayer.sendChatMessage(message)
     }
+
 
     //player
 
@@ -160,3 +165,23 @@ object lavaClip {
     }
 }
 
+object edgeJump{
+    var edging = false
+    @SubscribeEvent
+    fun onRender(event: RenderWorldLastEvent) {
+        if (!edging) return
+        val blockID = Block.getIdFromBlock(mc.theWorld.getBlockState(BlockPos(mc.thePlayer.posX,mc.thePlayer.posY- 1, mc.thePlayer.posZ)).block)
+        if (blockID == 0) {
+            jump()
+            edging = false
+        }
+    }
+
+    fun toggleEdging() {
+        if (!edging) {
+            edging = true
+        } else {
+            edging = false
+        }
+    }
+}

@@ -220,4 +220,59 @@ object WorldRenderUtils {
         }
         GlStateManager.popMatrix()
     }
+
+    fun drawSquareTwo(
+        x: Double,
+        y: Double,
+        z: Double,
+        xWidth: Double,
+        zWidth: Double,
+        color: Color,
+        thickness: Float = 3f,
+        phase: Boolean = true,
+        relocate: Boolean = true
+    ) {
+        GlStateManager.disableLighting()
+        GlStateManager.enableBlend()
+        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
+        GL11.glLineWidth(thickness)
+
+        if (phase) GlStateManager.disableDepth()
+        GlStateManager.disableTexture2D()
+
+        GlStateManager.pushMatrix()
+
+        // Translate to viewer's position if relocate is true
+        if (relocate) {
+            GlStateManager.translate(-renderManager.viewerPosX, -renderManager.viewerPosY, -renderManager.viewerPosZ)
+        }
+
+        // Begin drawing the lines
+        worldRenderer.begin(GL11.GL_LINE_STRIP, DefaultVertexFormats.POSITION)
+
+        // Set the color
+        GlStateManager.color(color.red.toFloat() / 255f, color.green.toFloat() / 255f,
+            color.blue.toFloat() / 255f, 1f)
+
+        // Calculate offsets so the center of the square is at (x, y, z)
+        val halfXWidth = xWidth / 2
+        val halfZWidth = zWidth / 2
+
+        // Define the vertices based on the center (x, y, z)
+        worldRenderer.pos(x + halfXWidth, y, z + halfZWidth).endVertex()
+        worldRenderer.pos(x + halfXWidth, y, z - halfZWidth).endVertex()
+        worldRenderer.pos(x - halfXWidth, y, z - halfZWidth).endVertex()
+        worldRenderer.pos(x - halfXWidth, y, z + halfZWidth).endVertex()
+        worldRenderer.pos(x + halfXWidth, y, z + halfZWidth).endVertex()
+
+        tessellator.draw()
+
+        GlStateManager.popMatrix()
+
+        // Restore the OpenGL states
+        GlStateManager.enableTexture2D()
+        GlStateManager.enableDepth()
+        GlStateManager.disableBlend()
+    }
+
 }

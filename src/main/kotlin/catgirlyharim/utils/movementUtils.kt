@@ -37,7 +37,7 @@ object MovementUtils {
     }
 
     fun jump() {
-        scheduleTask(0) { setKey("jump", true) }
-        scheduleTask(2) { setKey("jump", false) }
+        scheduleTask(0) {setKey("jump", true)}
+        scheduleTask(2) {setKey("jump", false)}
     }
 }

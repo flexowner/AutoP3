@@ -5,6 +5,7 @@ import catgirlyharim.features.AutoP3
 import catgirlyharim.features.P3Command
 import catgirlyharim.utils.Hclip
 import catgirlyharim.utils.ServerRotateUtils
+import catgirlyharim.utils.edgeJump
 import catgirlyharim.utils.lavaClip
 import net.minecraft.client.Minecraft
 import net.minecraft.client.settings.KeyBinding
@@ -66,7 +67,8 @@ class CatgirlYharim {
             Hclip,
             AutoP3,
             ServerRotateUtils,
-            lavaClip
+            lavaClip,
+            edgeJump
         ).forEach(MinecraftForge.EVENT_BUS::register)
 
         keyBinds.forEach(ClientRegistry::registerKeyBinding)

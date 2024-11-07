@@ -16,7 +16,10 @@ import catgirlyharim.utils.Utils.leftClick
 import catgirlyharim.utils.Utils.rotate
 import catgirlyharim.utils.Utils.sendChat
 import catgirlyharim.utils.Utils.swapFromName
+import catgirlyharim.utils.WorldRenderUtils.drawCustomSizedBoxAt
 import catgirlyharim.utils.WorldRenderUtils.drawP3box
+import catgirlyharim.utils.WorldRenderUtils.drawSquareTwo
+import catgirlyharim.utils.edgeJump.toggleEdging
 import catgirlyharim.utils.lavaClip.toggleLavaClip
 import net.minecraft.command.CommandBase
 import net.minecraft.command.ICommandSender
@@ -81,22 +84,21 @@ object AutoP3 {
                 "look" -> pink
                 "stop" -> red
                 "boom" -> cyan
-                "jump" -> blue
+                "jump" -> gray
                 "hclip" -> black
                 "bonzo" -> white
                 "vclip" -> yellow
-                "block" -> darkGray
+                "block" -> blue
                 "edge" -> pink
-                "blue" -> blue
                 else -> black
             }
             if (ring.active) {
-                drawP3box(ring.x.toDouble() - ring.width / 2, ring.y.toDouble(), ring.z.toDouble() - ring.width / 2, ring.width.toDouble(), ring.height.toDouble(), ring.width.toDouble(), color, 2F, false)
+            drawSquareTwo(ring.x.toDouble(), ring.y.toDouble(), ring.z.toDouble(), ring.width.toDouble(), ring.width.toDouble(), color, 3f, true, true)
             }
 
-            val playerX = (Math.round(mc.renderManager.viewerPosX * 2) / 2).toFloat()
-            val playerY = (Math.round(mc.renderManager.viewerPosY * 2) / 2).toFloat()
-            val playerZ = (Math.round(mc.renderManager.viewerPosZ * 2) / 2).toFloat()
+            val playerX = mc.renderManager.viewerPosX
+            val playerY = mc.renderManager.viewerPosY
+            val playerZ = mc.renderManager.viewerPosZ
             val distanceX = abs(playerX - ring.x)
             val distanceY = (playerY - ring.y)
             val distanceZ = abs(playerZ - ring.z)
@@ -122,6 +124,7 @@ object AutoP3 {
                     "jump" -> jump()
                     "hclip" -> hclip(ring.yaw)
                     "bonzo" -> {
+                        swapFromName("bonzo")
                         if (ring.silent) {
                             set(ring.yaw, ring.pitch)
                         } else {
@@ -144,8 +147,7 @@ object AutoP3 {
                         var (yaw, pitch) = getYawAndPitch(ring.lookX, ring.lookY, ring.lookZ)
                         rotate(yaw, pitch)
                     }
-                    "edge" -> sendChat("1")
-                    "blue" -> sendChat("1")
+                    "edge" -> toggleEdging()
                     else -> sendChat("1")
                 }
             }
@@ -181,9 +183,9 @@ object P3Command : CommandBase() {
                 val type = args[1]
                 val active = true
                 val route = selectedRoute
-                val x = (Math.round(mc.renderManager.viewerPosX * 2) / 2).toFloat()
-                val y = (Math.round(mc.renderManager.viewerPosY * 2) / 2).toFloat()
-                val z = (Math.round(mc.renderManager.viewerPosZ * 2) / 2).toFloat()
+                val x = Math.round(mc.renderManager.viewerPosX * 2) / 2.0
+                val y = Math.round(mc.renderManager.viewerPosY * 2) / 2.0
+                val z = Math.round(mc.renderManager.viewerPosZ * 2) / 2.0
                 val yaw = mc.renderManager.playerViewY
                 val pitch = mc.renderManager.playerViewX
                 var lookX = 0f
@@ -200,7 +202,7 @@ object P3Command : CommandBase() {
                 }
                 val h = 1f
                 val w = 1f
-                var toPush = PushParams(type = type, active = active, route = route, x = x, y = y, z = z, height = h, width = w)
+                var toPush = PushParams(type = type, active = active, route = route, x = x.toFloat(), y = y.toFloat(), z = z.toFloat(), height = h, width = w, yaw = yaw, pitch = pitch)
                 if (type == "block") {
                     toPush.lookX = lookX
                     toPush.lookY = lookY
@@ -209,6 +211,10 @@ object P3Command : CommandBase() {
                 if (type == "vclip") {
                     toPush.depth = depth
                 }
+
+                sendChat(x.toString())
+                sendChat(y.toString())
+                sendChat(z.toString())
 
                 args.drop(2).forEachIndexed { index, arg ->
                     when {
@@ -236,3 +242,4 @@ object P3Command : CommandBase() {
         }
     }
 }
+
