@@ -1,7 +1,7 @@
-package catgirlyharim.utils
+package catgirlyharim.init.utils
 
-import catgirlyharim.CatgirlYharim.Companion.mc
-import catgirlyharim.events.PacketSentEvent
+import catgirlyharim.init.CatgirlYharim.Companion.mc
+import catgirlyharim.init.events.PacketSentEvent
 import net.minecraft.network.play.client.C03PacketPlayer
 import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent

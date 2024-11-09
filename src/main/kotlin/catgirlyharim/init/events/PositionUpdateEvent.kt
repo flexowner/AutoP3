@@ -1,4 +1,4 @@
-package catgirlyharim.events
+package catgirlyharim.init.events
 
 import net.minecraftforge.fml.common.eventhandler.Cancelable
 import net.minecraftforge.fml.common.eventhandler.Event

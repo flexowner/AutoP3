@@ -1,6 +1,6 @@
-package catgirlyharim.utils
+package catgirlyharim.init.utils
 
-import catgirlyharim.CatgirlYharim.Companion.mc
+import catgirlyharim.init.CatgirlYharim.Companion.mc
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import java.util.concurrent.CopyOnWriteArrayList

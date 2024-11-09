@@ -1,6 +1,6 @@
-package catgirlyharim.utils
+package catgirlyharim.init.utils
 
-import catgirlyharim.CatgirlYharim.Companion.mc
+import catgirlyharim.init.CatgirlYharim.Companion.mc
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator

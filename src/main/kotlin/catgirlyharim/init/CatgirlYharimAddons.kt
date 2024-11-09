@@ -1,10 +1,12 @@
-package catgirlyharim
+package catgirlyharim.init
 
-import catgirlyharim.config.MyConfig
-import catgirlyharim.features.AlwaysSprint
-import catgirlyharim.features.AutoP3
-import catgirlyharim.features.Simulation
-import catgirlyharim.utils.*
+import catgirlyharim.init.config.MyConfig
+import catgirlyharim.init.features.AlwaysSprint
+import catgirlyharim.init.features.AutoP3
+import catgirlyharim.init.features.AutoP3.P3Command
+import catgirlyharim.init.features.RingManager
+import catgirlyharim.init.features.Simulation
+import catgirlyharim.init.utils.*
 import net.minecraft.client.Minecraft
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.command.CommandBase
@@ -51,18 +53,18 @@ class CgyCommands : CommandBase() {
 class CatgirlYharim {
     @Mod.EventHandler
     fun onInit(event: FMLInitializationEvent) {
-        config = MyConfig
+        config = MyConfig()
         listOf(
             CgyCommands(),
-            AutoP3.P3Command
         ).forEach {
             ClientCommandHandler.instance.registerCommand((it))
         }
 
         listOf(
             this,
-            MyConfig,
+            P3Command,
             Hclip,
+            MyConfig(),
             AutoP3,
             ServerRotateUtils,
             lavaClip,
@@ -73,10 +75,11 @@ class CatgirlYharim {
             MovementUtils,
             WorldRenderUtils,
             ClientListener,
-            Utils
+            Utils,
+            RingManager
         ).forEach(MinecraftForge.EVENT_BUS::register)
 
-        keyBinds.forEach(ClientRegistry::registerKeyBinding)
+        //keyBinds.forEach(ClientRegistry::registerKeyBinding)
     }
 /*
     @Subscribe
@@ -87,8 +90,5 @@ class CatgirlYharim {
     companion object {
         val mc: Minecraft = Minecraft.getMinecraft()
         var config: MyConfig? = null
-        val keyBinds = arrayOf(
-            KeyBinding("Hclip", Keyboard.KEY_G, "CatgirlYharim")
-        )
     }
 }

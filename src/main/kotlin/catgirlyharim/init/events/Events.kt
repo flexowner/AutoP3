@@ -1,4 +1,4 @@
-package catgirlyharim.events
+package catgirlyharim.init.events
 
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.audio.ISound

@@ -1,7 +1,7 @@
-package catgirlyharim.utils
+package catgirlyharim.init.utils
 
-import catgirlyharim.CatgirlYharim.Companion.mc
-import catgirlyharim.utils.ClientListener.scheduleTask
+import catgirlyharim.init.CatgirlYharim.Companion.mc
+import catgirlyharim.init.utils.ClientListener.scheduleTask
 import net.minecraft.client.settings.GameSettings.isKeyDown
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.client.settings.KeyBinding.setKeyBindState
@@ -42,7 +42,7 @@ object MovementUtils {
     }
 
     fun jump() {
-        scheduleTask(0) {setKey("jump", true)}
-        scheduleTask(2) {setKey("jump", false)}
+        scheduleTask(0) { setKey("jump", true) }
+        scheduleTask(2) { setKey("jump", false) }
     }
 }

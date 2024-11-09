@@ -1,7 +1,7 @@
 package catgirlyharim.init.mixins;
 
-import catgirlyharim.events.PreKeyInputEvent;
-import catgirlyharim.events.PreMouseInputEvent;
+import catgirlyharim.init.events.PreKeyInputEvent;
+import catgirlyharim.init.events.PreMouseInputEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.input.Keyboard;

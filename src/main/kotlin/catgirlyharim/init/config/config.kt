@@ -1,9 +1,8 @@
-package catgirlyharim.config
+package catgirlyharim.init.config
 
-import catgirlyharim.CatgirlYharim.Companion.mc
-import catgirlyharim.utils.Hclip.hclip
-import catgirlyharim.utils.lavaClip.lavaClipDistance
-import catgirlyharim.utils.lavaClip.toggleLavaClip
+import catgirlyharim.init.CatgirlYharim.Companion.mc
+import catgirlyharim.init.utils.Hclip.hclip
+import catgirlyharim.init.utils.lavaClip.toggleLavaClip
 
 import cc.polyfrost.oneconfig.config.Config
 import cc.polyfrost.oneconfig.config.annotations.KeyBind
@@ -15,7 +14,7 @@ import cc.polyfrost.oneconfig.config.data.Mod
 import cc.polyfrost.oneconfig.config.data.ModType
 import org.lwjgl.input.Keyboard
 
-object MyConfig : Config(Mod("My Mod", ModType.SKYBLOCK), "config.json") {
+class MyConfig : Config(Mod("My Mod", ModType.SKYBLOCK), "config.json") {
 
     @KeyBind(
         name = "Hclip",
@@ -96,7 +95,7 @@ object MyConfig : Config(Mod("My Mod", ModType.SKYBLOCK), "config.json") {
         name = "Always sprint",
         category = "Simulation"
     )
-    var alwaysSprint = false
+    public var alwaysSprint = false
     init {
         initialize()
         registerKeyBind(hclipKeyBind) {

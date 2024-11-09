@@ -1,5 +1,6 @@
 import org.apache.commons.lang3.SystemUtils
-import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.include
+
+group = "catgirlyharimaddons"
 
 plugins {
     idea
@@ -10,6 +11,11 @@ plugins {
     kotlin("jvm") version "2.0.0"
 }
 
+buildscript {
+    dependencies {
+        classpath("com.google.code.gson:gson:2.8.9")
+    }
+}
 //Constants:
 
 val baseGroup: String by project
@@ -43,10 +49,14 @@ loom {
         }
         remove(getByName("server"))
     }
+    launchConfigs.named("client") {
+        // Loads OneConfig in dev env. Replace other tweak classes with this, but keep any other attributes!
+        arg("--tweakClass", "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker")
+    }
     forge {
         pack200Provider.set(dev.architectury.pack200.java.Pack200Adapter())
         // If you don't want mixins, remove this lines
-        mixinConfig("mixins.$modid.json")
+        mixinConfig("mixins.cgy.json")
 	    if (transformerFile.exists()) {
 			println("Installing access transformer")
 		    accessTransformer(transformerFile)
@@ -54,7 +64,7 @@ loom {
     }
     // If you don't want mixins, remove these lines
     mixin {
-        defaultRefmapName.set("mixins.$modid.refmap.json")
+        defaultRefmapName.set("mixins.cgy.refmap.json")
     }
 }
 
@@ -69,13 +79,6 @@ sourceSets.main {
 }
 
 // Dependencies:
-
-loom {
-    launchConfigs.named("client") {
-        // Loads OneConfig in dev env. Replace other tweak classes with this, but keep any other attributes!
-        arg("--tweakClass", "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker")
-    }
-}
 
 tasks {
     jar { // loads OneConfig at launch. Add these launch attributes but keep your old attributes!
@@ -100,10 +103,6 @@ val shadowImpl: Configuration by configurations.creating {
     configurations.implementation.get().extendsFrom(this)
 }
 
-val packageLib by configurations.creating {
-    configurations.implementation.get().extendsFrom(this)
-}
-
 dependencies {
     minecraft("com.mojang:minecraft:1.8.9")
     mappings("de.oceanlabs.mcp:mcp_stable:22-1.8.9")
@@ -123,7 +122,7 @@ dependencies {
     // Basic OneConfig dependencies for legacy versions. See OneConfig example mod for more info
     compileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+") // Should not be included in jar
     // include should be replaced with a configuration that includes this in the jar
-    runtimeOnly("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
+    shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
 }
 
 // Tasks:
@@ -140,9 +139,9 @@ tasks.withType(org.gradle.jvm.tasks.Jar::class) {
 
         // If you don't want mixins, remove these lines
         this["TweakClass"] = "org.spongepowered.asm.launch.MixinTweaker"
-        this["MixinConfigs"] = "mixins.$modid.json"
+        this["MixinConfigs"] = "mixins.cgy.json"
 	    if (transformerFile.exists())
-			this["FMLAT"] = "${modid}_at.cfg"
+			this["FMLAT"] = "cgy_at.cfg"
     }
 }
 
@@ -152,11 +151,11 @@ tasks.processResources {
     inputs.property("modid", modid)
     inputs.property("basePackage", baseGroup)
 
-    filesMatching(listOf("mcmod.info", "mixins.$modid.json")) {
+    filesMatching(listOf("mcmod.info", "mixins.cgy.json")) {
         expand(inputs.properties)
     }
 
-    rename("accesstransformer.cfg", "META-INF/${modid}_at.cfg")
+    rename("accesstransformer.cfg", "META-INF/cgy_at.cfg")
 }
 
 
@@ -169,6 +168,16 @@ val remapJar by tasks.named<net.fabricmc.loom.task.RemapJarTask>("remapJar") {
 tasks.jar {
     archiveClassifier.set("without-deps")
     destinationDirectory.set(layout.buildDirectory.dir("intermediates"))
+
+    manifest {
+        attributes(
+            "ModSide" to "CLIENT",
+            "TweakOrder" to 0,
+            "ForceLoadAsMod" to true,
+            "TweakClass" to "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker",
+            "Main-Class" to "catgirlyharim.init.CatgirlYharim"
+        )
+    }
 }
 
 tasks {

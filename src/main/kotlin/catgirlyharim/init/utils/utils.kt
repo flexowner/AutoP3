@@ -1,14 +1,14 @@
-package catgirlyharim.utils
+package catgirlyharim.init.utils
 
-import catgirlyharim.CatgirlYharim.Companion.mc
-import catgirlyharim.utils.MovementUtils.restartMovement
-import catgirlyharim.config.MyConfig.hclipDistance
-import catgirlyharim.events.MovementUpdateEvent
-import catgirlyharim.events.ReceivePacketEvent
-import catgirlyharim.utils.MovementUtils.jump
-import catgirlyharim.utils.MovementUtils.stopMovement
-import catgirlyharim.utils.Utils.relativeClip
-import catgirlyharim.utils.WorldRenderUtils.renderText
+import catgirlyharim.init.CatgirlYharim.Companion.config
+import catgirlyharim.init.CatgirlYharim.Companion.mc
+import catgirlyharim.init.utils.MovementUtils.restartMovement
+import catgirlyharim.init.events.MovementUpdateEvent
+import catgirlyharim.init.events.ReceivePacketEvent
+import catgirlyharim.init.utils.MovementUtils.jump
+import catgirlyharim.init.utils.MovementUtils.stopMovement
+import catgirlyharim.init.utils.Utils.relativeClip
+import catgirlyharim.init.utils.WorldRenderUtils.renderText
 import net.minecraft.block.Block
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.settings.KeyBinding
@@ -79,7 +79,7 @@ object Utils {
         mc.thePlayer.setPosition(mc.thePlayer.posX + x,mc.thePlayer.posY + y,mc.thePlayer.posZ + z)
     }
 
-    fun getYawAndPitch(x: Float, y:Float, z:Float): Pair<Float, Float> {
+    fun getYawAndPitch(x: Double, y:Double, z:Double): Pair<Float, Float> {
         val dx = x - mc.thePlayer.posX   // Difference in x
         val dy = y - mc.thePlayer.posY  // Difference in y
         val dz = z - mc.thePlayer.posZ   // Difference in z
@@ -87,14 +87,14 @@ object Utils {
         val horizontalDistance = sqrt(dx * dx + dz * dz )
 
         val yaw = Math.toDegrees(atan2(-dx, dz))
-        val pitch = Math.toDegrees(atan2(dy, horizontalDistance))
+        val pitch = -Math.toDegrees(atan2(dy, horizontalDistance))
 
         val normalizedYaw = if (yaw < 0) yaw + 360 else yaw
 
         return Pair(normalizedYaw.toFloat(), pitch.toFloat())
     }
 
-    fun distanceToPlayer(x: Float, y: Float, z: Float): Double {
+    fun distanceToPlayer(x: Double, y: Double, z: Double): Double {
         return sqrt((mc.renderManager.viewerPosX - x) * (mc.renderManager.viewerPosX - x) +
                     (mc.renderManager.viewerPosY - y) * (mc.renderManager.viewerPosY - y) +
                     (mc.renderManager.viewerPosZ - z) * (mc.renderManager.viewerPosZ - z)
@@ -123,7 +123,7 @@ object Hclip {
     @SubscribeEvent
     fun onMovementUpdate(event: MovementUpdateEvent.Pre) {
         if (pendingHclip) {
-            val speed = mc.thePlayer.capabilities.walkSpeed * hclipDistance
+            val speed = mc.thePlayer.capabilities.walkSpeed * config!!.hclipDistance
             val radians = yawtouse!! * Math.PI / 180
             val x = -sin(radians) * speed
             val z = cos(radians) * speed
