@@ -1,15 +1,15 @@
 package catgirlyharim.features
 
 import catgirlyharim.CatgirlYharim.Companion.mc
+import catgirlyharim.config.MyConfig.autoP3Active
 import catgirlyharim.config.MyConfig.editmode
 import catgirlyharim.config.MyConfig.selectedRoute
-import catgirlyharim.features.AutoP3.inp3
-import catgirlyharim.features.AutoP3.rings
 import catgirlyharim.utils.ClientListener.scheduleTask
 import catgirlyharim.utils.Hclip.hclip
 import catgirlyharim.utils.MovementUtils.jump
 import catgirlyharim.utils.MovementUtils.stopMovement
 import catgirlyharim.utils.MovementUtils.stopVelo
+import catgirlyharim.utils.MovementUtils.walk
 import catgirlyharim.utils.ServerRotateUtils.resetRotations
 import catgirlyharim.utils.ServerRotateUtils.set
 import catgirlyharim.utils.Utils.airClick
@@ -23,6 +23,7 @@ import catgirlyharim.utils.Utils.swapFromName
 import catgirlyharim.utils.WorldRenderUtils.drawSquareTwo
 import catgirlyharim.utils.edgeJump.toggleEdging
 import catgirlyharim.utils.lavaClip.toggleLavaClip
+import net.minecraft.client.settings.KeyBinding.setKeyBindState
 import net.minecraft.command.CommandBase
 import net.minecraft.command.ICommandSender
 import net.minecraft.event.ClickEvent
@@ -32,40 +33,19 @@ import net.minecraft.util.ChatStyle
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent
 import java.awt.Color.*
 
 import java.lang.Float.parseFloat
 import kotlin.math.abs
 
 data class PushParams(
-    var type: String = "",
-    var active: Boolean = true,
-    var route: String = "",
-    var x: Float = 0f,
-    var y: Float = 0f,
-    var z: Float = 0f,
-    var yaw: Float = 0f,
-    var pitch: Float = 0f,
-    var height: Float = 1f,
-    var width: Float = 1f,
-    var lookX: Float = 0f,
-    var lookY: Float = 0f,
-    var lookZ: Float = 0f,
-    var depth: Float = 0f,
-    var stopping: Boolean = false,
-    var looking: Boolean = false,
-    var walking: Boolean = false,
-    var silent: Boolean = false,
-    var clientSide: Boolean = false,
-    var delaying: Boolean = false,
-    var delay: Int = 0,
-    var commanding: Boolean = false,
-    var cmd: String? = null
+    /*Hi :3*/var type: String = "", var active: Boolean = true, var route: String = "", var x: Float = 0f, var y: Float = 0f, var z: Float = 0f, var yaw: Float = 0f, var pitch: Float = 0f, var height: Float = 1f, var width: Float = 1f, var lookX: Float = 0f, var lookY: Float = 0f, var lookZ: Float = 0f, var depth: Float = 0f, var stopping: Boolean = false, var looking: Boolean = false, var walking: Boolean = false, var silent: Boolean = false, var delaying: Boolean = false, var delay: Int = 0
 )
 
 object AutoP3 {
     var inp3 = false
-    var cooldowm = false
+    var cooldown = false
     var rings = mutableListOf<PushParams>()
 
     @SubscribeEvent
@@ -73,6 +53,7 @@ object AutoP3 {
         val message = event.message.unformattedText
         if (message.contains("[BOSS] Storm: I should have known that I stood no chance.")) {
             inp3 = true
+            autoP3Active = true
             //modMessage("P3 started!")
         }
         if (message.contains("[BOSS] Goldor: You have done it, you destroyed the factory…")) { // Change to necron death
@@ -82,10 +63,11 @@ object AutoP3 {
     }
 
     @SubscribeEvent
-    fun onRender(event: RenderWorldLastEvent) {
+    fun onRender(event: RenderTickEvent) {
+        if (!autoP3Active) return
         if (!inp3) return
         rings.forEach { ring ->
-            if (ring.route != selectedRoute) return
+
             val color = when (ring.type) {
                 "look" -> pink
                 "stop" -> red
@@ -96,15 +78,17 @@ object AutoP3 {
                 "vclip" -> yellow
                 "block" -> blue
                 "edge" -> pink
+                "walk" -> green
                 else -> black
             }
-            if (ring.active) {
-                drawSquareTwo(ring.x.toDouble(), ring.y.toDouble(), ring.z.toDouble(), ring.width.toDouble(), ring.width.toDouble(), color, 3f, false, true)
-                drawSquareTwo(ring.x.toDouble(), ring.y.toDouble() + ring.height / 2, ring.z.toDouble(), ring.width.toDouble(), ring.width.toDouble(), color, 3f, false, true)
-                drawSquareTwo(ring.x.toDouble(), ring.y.toDouble() + ring.height, ring.z.toDouble(), ring.width.toDouble(), ring.width.toDouble(), color, 3f, false, true)
+            if (ring.active && ring.route.toString() == selectedRoute.toString()) {
+                drawSquareTwo(ring.x.toDouble(), ring.y.toDouble() + 0.05, ring.z.toDouble(), ring.width.toDouble(), ring.width.toDouble(), color, 4f, false, true)
+                drawSquareTwo(ring.x.toDouble(), ring.y.toDouble() + ring.height / 2, ring.z.toDouble(), ring.width.toDouble(), ring.width.toDouble(), color, 4f, false, true)
+                drawSquareTwo(ring.x.toDouble(), ring.y.toDouble() + ring.height, ring.z.toDouble(), ring.width.toDouble(), ring.width.toDouble(), color, 4f, false, true)
 
             }
 
+            if (ring.route.toString() != selectedRoute.toString()) return
             val playerX = mc.renderManager.viewerPosX
             val playerY = mc.renderManager.viewerPosY
             val playerZ = mc.renderManager.viewerPosZ
@@ -113,15 +97,24 @@ object AutoP3 {
             val distanceZ = abs(playerZ - ring.z)
             if ((distanceX > (ring.width / 2) || (distanceY >= (ring.height - 0.5) || distanceY < 0) || distanceZ > (ring.width / 2))) {
                 ring.active = true
-            } else if (ring.active && !editmode){
+            } else if (ring.active && !editmode && !cooldown){
                 ring.active = false
                 when (ring.type) {
-                    "look" -> rotate(ring.yaw, ring.pitch)
+                    "walk" -> {
+                        setKeyBindState(mc.gameSettings.keyBindSprint.keyCode, true)
+                        modMessage("Walking")
+                    }
+                    "look" -> {
+                        modMessage("Looking")
+                        rotate(ring.yaw, ring.pitch)
+                    }
                     "stop" -> {
                         stopVelo()
                         stopMovement()
+                        modMessage("Stopping")
                     }
-                    "boom" -> {
+                    "boom" ->  {
+                        modMessage("Exploding")
                         rotate(ring.yaw, ring.pitch)
                         swapFromName("boom")
                         if(ring.delaying) {
@@ -130,9 +123,21 @@ object AutoP3 {
                             scheduleTask(4) { leftClick()}
                         }
                     }
-                    "jump" -> jump()
-                    "hclip" -> hclip(ring.yaw)
+                    "jump" -> {
+                        modMessage("Jumping")
+                        jump()
+                    }
+                    "hclip" -> {
+                        modMessage("Hclipping")
+                        hclip(ring.yaw)
+                        if (ring.walking) {
+                            scheduleTask(1) {
+                                walk()
+                            }
+                        }
+                    }
                     "bonzo" -> {
+                        modMessage("Bonzoing")
                         swapFromName("bonzo")
                         if (ring.silent) {
                             set(ring.yaw, ring.pitch)
@@ -151,18 +156,34 @@ object AutoP3 {
                             }
                         }
                     }
-                    "vclip" -> toggleLavaClip(ring.depth)
+                    "vclip" -> {
+                        modMessage("Clipping ${ring.depth} blocks down")
+                        toggleLavaClip(ring.depth)
+                    }
                     "block" -> {
+                        modMessage("Rotating")
                         var (yaw, pitch) = getYawAndPitch(ring.lookX, ring.lookY, ring.lookZ)
                         rotate(yaw, pitch)
                     }
-                    "edge" -> toggleEdging()
-                    else -> sendChat("1")
+                    "edge" -> {
+                        modMessage("Edging")
+                        toggleEdging()
+                    }
+                    else -> sendChat("Invalid ring: ${ring.type}")
+                }
+                if (ring.stopping) {
+                    stopVelo()
+                }
+                if (ring.walking) {
+                    walk()
+                }
+                if (ring.looking) {
+                    rotate(ring.yaw, ring.pitch)
                 }
             }
         }
     }
-}
+
 
 object P3Command : CommandBase() {
     override fun getCommandName(): String {
@@ -186,12 +207,26 @@ object P3Command : CommandBase() {
             modMessage("No argument specified!")
             return
         }
-
         when (args[0]) {
             "add" -> {
                 val type = args[1]
+                if (!arrayListOf(
+                        "walk",
+                        "look",
+                        "stop",
+                        "bonzo",
+                        "boom",
+                        "hclip",
+                        "block",
+                        "edge",
+                        "vclip"
+                    ).contains((type))
+                ) {
+                    modMessage("Invalid ring!")
+                    return
+                }
                 val active = true
-                val route = selectedRoute
+                val route = selectedRoute.toString()
                 val x = Math.round(mc.renderManager.viewerPosX * 2) / 2.0
                 val y = Math.round(mc.renderManager.viewerPosY * 2) / 2.0
                 val z = Math.round(mc.renderManager.viewerPosZ * 2) / 2.0
@@ -211,7 +246,18 @@ object P3Command : CommandBase() {
                 }
                 val h = 1f
                 val w = 1f
-                var toPush = PushParams(type = type, active = active, route = route, x = x.toFloat(), y = y.toFloat(), z = z.toFloat(), height = h, width = w, yaw = yaw, pitch = pitch)
+                var toPush = PushParams(
+                    type = type,
+                    active = active,
+                    route = route,
+                    x = x.toFloat(),
+                    y = y.toFloat(),
+                    z = z.toFloat(),
+                    height = h,
+                    width = w,
+                    yaw = yaw,
+                    pitch = pitch
+                )
                 if (type == "block") {
                     toPush.lookX = lookX
                     toPush.lookY = lookY
@@ -220,7 +266,6 @@ object P3Command : CommandBase() {
                 if (type == "vclip") {
                     toPush.depth = depth
                 }
-
                 args.drop(2).forEachIndexed { index, arg ->
                     when {
                         arg.startsWith("h") -> toPush.height = arg.slice(1 until arg.length).toFloat()
@@ -243,6 +288,11 @@ object P3Command : CommandBase() {
                     }
                 }
                 rings.add(toPush)
+                cooldown = true
+                modMessage("$type added!")
+                scheduleTask(19) {
+                    cooldown = false
+                }
             }
             "edit" -> {
                 if (editmode) {
@@ -255,6 +305,7 @@ object P3Command : CommandBase() {
             }
             "start" -> {
                 inp3 = true
+                autoP3Active = true
                 modMessage("P3 started!")
             }
             "stop" -> {
@@ -279,21 +330,60 @@ object P3Command : CommandBase() {
                     .apply {
                         chatStyle = ChatStyle().apply {
                             chatClickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/p3 clearconfirm")
-                            chatHoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, ChatComponentText("$prefix Click to clear ALL routes!"))
+                            chatHoverEvent = HoverEvent(
+                                HoverEvent.Action.SHOW_TEXT,
+                                ChatComponentText("$prefix Click to clear ALL routes!")
+                            )
                         }
-                    })
+                    }
+                )
             }
+            "clearroute" -> {
+                val prefix: String = "§0[§6Yharim§0] §8»§r "
+                sender?.addChatMessage(ChatComponentText("$prefix Are you sure?")
+                    .apply {
+                        chatStyle = ChatStyle().apply {
+                            chatClickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/p3 clearrouteconfirm")
+                            chatHoverEvent = HoverEvent(
+                                HoverEvent.Action.SHOW_TEXT,
+                                ChatComponentText("$prefix Click to clear CURRENT route!")
+                            )
+                        }
+                    }
+                )
+            }
+            "clearrouteconfirm" -> {
+                AutoP3.rings = rings.filter { ring ->
+                    // Filter rings based on the route and distance criteria
+                    ring.route != selectedRoute
+                }.toMutableList()
+            }
+
             "clearconfirm" -> {
                 AutoP3.rings = mutableListOf<PushParams>()
                 modMessage("Cleared route")
             }
+
             "load" -> {
                 val route = args[1]
                 selectedRoute = route
                 modMessage("Loaded route $route")
             }
+
+            "on" -> {
+                autoP3Active = true
+                modMessage("AutoP3 on!")
+            }
+
+            "off" -> {
+                autoP3Active = false
+                modMessage("AutoP3 off!")
+            }
+
+            else -> modMessage("Invalid argument!")
         }
     }
-
 }
+}
+
 

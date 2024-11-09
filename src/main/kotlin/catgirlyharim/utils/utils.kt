@@ -8,7 +8,6 @@ import catgirlyharim.events.ReceivePacketEvent
 import catgirlyharim.utils.MovementUtils.jump
 import catgirlyharim.utils.MovementUtils.stopMovement
 import catgirlyharim.utils.Utils.relativeClip
-import catgirlyharim.utils.Utils.sendChat
 import catgirlyharim.utils.WorldRenderUtils.renderText
 import net.minecraft.block.Block
 import net.minecraft.client.gui.ScaledResolution
@@ -113,9 +112,12 @@ object Hclip {
         val forward = mc.gameSettings.keyBindForward.keyCode
         stopMovement()
         yawtouse = yaw
+        if (mc.thePlayer.onGround) {
+            jump()
+        }
         mc.thePlayer.setVelocity(0.0, mc.thePlayer.motionY, 0.0)
         pendingHclip = true
-        restartMovement()
+        //restartMovement()
     }
 
     @SubscribeEvent

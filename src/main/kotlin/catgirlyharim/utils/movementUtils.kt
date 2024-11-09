@@ -4,6 +4,7 @@ import catgirlyharim.CatgirlYharim.Companion.mc
 import catgirlyharim.utils.ClientListener.scheduleTask
 import net.minecraft.client.settings.GameSettings.isKeyDown
 import net.minecraft.client.settings.KeyBinding
+import net.minecraft.client.settings.KeyBinding.setKeyBindState
 
 object MovementUtils {
     fun setKey(key: String, down: Boolean) {
@@ -16,6 +17,10 @@ object MovementUtils {
             "shift" -> KeyBinding.setKeyBindState(mc.gameSettings.keyBindSneak.keyCode, down)
             "sprint" -> KeyBinding.setKeyBindState(mc.gameSettings.keyBindSprint.keyCode, down)
         }
+    }
+
+    fun walk() {
+        setKeyBindState(mc.gameSettings.keyBindForward.keyCode, true)
     }
 
     fun stopVelo() {

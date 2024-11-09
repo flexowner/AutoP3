@@ -1,12 +1,10 @@
 package catgirlyharim
 
 import catgirlyharim.config.MyConfig
+import catgirlyharim.features.AlwaysSprint
 import catgirlyharim.features.AutoP3
-import catgirlyharim.features.P3Command
-import catgirlyharim.utils.Hclip
-import catgirlyharim.utils.ServerRotateUtils
-import catgirlyharim.utils.edgeJump
-import catgirlyharim.utils.lavaClip
+import catgirlyharim.features.Simulation
+import catgirlyharim.utils.*
 import net.minecraft.client.Minecraft
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.command.CommandBase
@@ -56,7 +54,7 @@ class CatgirlYharim {
         config = MyConfig
         listOf(
             CgyCommands(),
-            P3Command
+            AutoP3.P3Command
         ).forEach {
             ClientCommandHandler.instance.registerCommand((it))
         }
@@ -68,7 +66,14 @@ class CatgirlYharim {
             AutoP3,
             ServerRotateUtils,
             lavaClip,
-            edgeJump
+            edgeJump,
+            Simulation,
+            AlwaysSprint,
+            HUDRenderUtils,
+            MovementUtils,
+            WorldRenderUtils,
+            ClientListener,
+            Utils
         ).forEach(MinecraftForge.EVENT_BUS::register)
 
         keyBinds.forEach(ClientRegistry::registerKeyBinding)

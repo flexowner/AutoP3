@@ -119,7 +119,7 @@ dependencies {
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT")
 
     // If you don't want to log in with your real minecraft account, remove this line
-    runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.2.1")
+    //runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.2.1")
     // Basic OneConfig dependencies for legacy versions. See OneConfig example mod for more info
     compileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+") // Should not be included in jar
     // include should be replaced with a configuration that includes this in the jar
@@ -169,6 +169,17 @@ val remapJar by tasks.named<net.fabricmc.loom.task.RemapJarTask>("remapJar") {
 tasks.jar {
     archiveClassifier.set("without-deps")
     destinationDirectory.set(layout.buildDirectory.dir("intermediates"))
+}
+
+tasks {
+    jar { // loads OneConfig at launch. Add these launch attributes but keep your old attributes!
+        manifest.attributes += mapOf(
+            "ModSide" to "CLIENT",
+            "TweakOrder" to 0,
+            "ForceLoadAsMod" to true,
+            "TweakClass" to "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"
+        )
+    }
 }
 
 tasks.shadowJar {

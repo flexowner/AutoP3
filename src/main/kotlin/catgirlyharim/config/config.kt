@@ -17,14 +17,24 @@ import org.lwjgl.input.Keyboard
 
 object MyConfig : Config(Mod("My Mod", ModType.SKYBLOCK), "config.json") {
 
-    @KeyBind(name = "Hclip")
+    @KeyBind(
+        name = "Hclip",
+        category = "Clip",
+        subcategory = "Hclip"
+    )
     var hclipKeyBind = OneKeyBind(Keyboard.KEY_G); // Initialize it with a default keybind
 
-    @KeyBind(name = "Lava Clip")
+    @KeyBind(
+        name = "Lava Clip",
+        category = "Clip",
+        subcategory = "Lavaclip"
+    )
     var lavaClipKeyBind = OneKeyBind(Keyboard.KEY_G); // Initialize it with a default keybind
 
     @Slider(
-        name = "Distance",
+        name = "Hclip distance",
+        category = "Clip",
+        subcategory = "Hclip",
         min = 1f,
         max = 3F,
         step = 0
@@ -33,23 +43,60 @@ object MyConfig : Config(Mod("My Mod", ModType.SKYBLOCK), "config.json") {
 
     @Slider(
         name = "Distance",
+        category = "Clip",
+        subcategory = "Lavaclip",
         min = 1f,
         max = 50F,
         step = 1
     )
     var lavaClipDistanceKeyBind: Float = 30f;
 
-    @Switch(name = "Editmode")
-    var editmode = true
+    @Switch(
+        name = "AutoP3",
+        category = "AutoP3",
+    )
+    var autoP3Active = false
 
     @Text(
         name = "Route",
+        category = "AutoP3",
+        subcategory = "Route",
         placeholder = "Select a route!",
         secure = false,
         multiline = false
     )
     var selectedRoute = ""
 
+    @Switch(
+        name = "Editmode",
+        category = "AutoP3",
+        subcategory = "Misc",
+    )
+    var editmode = true
+
+    @Switch(
+        name = "Simulation",
+        category = "Simulation"
+    )
+    var activeSimulation = false
+
+    @Switch(
+        name = "Lava",
+        category = "Simulation"
+    )
+    var lavaSimulation = false
+
+    @Switch(
+        name = "Speed",
+        category = "Simulation"
+    )
+    var speedSimulation = false
+
+    @Switch(
+        name = "Always sprint",
+        category = "Simulation"
+    )
+    var alwaysSprint = false
     init {
         initialize()
         registerKeyBind(hclipKeyBind) {
