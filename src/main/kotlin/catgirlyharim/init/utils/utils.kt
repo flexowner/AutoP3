@@ -7,6 +7,7 @@ import catgirlyharim.init.events.MovementUpdateEvent
 import catgirlyharim.init.events.ReceivePacketEvent
 import catgirlyharim.init.utils.MovementUtils.jump
 import catgirlyharim.init.utils.MovementUtils.stopMovement
+import catgirlyharim.init.utils.Utils.modMessage
 import catgirlyharim.init.utils.Utils.relativeClip
 import catgirlyharim.init.utils.WorldRenderUtils.renderText
 import net.minecraft.block.Block
@@ -14,6 +15,7 @@ import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.settings.KeyBinding
 import net.minecraft.item.ItemStack
 import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
+import net.minecraft.network.play.client.C0EPacketClickWindow
 import net.minecraft.network.play.server.S12PacketEntityVelocity
 import net.minecraft.util.BlockPos
 import net.minecraft.util.ChatComponentText
@@ -101,6 +103,10 @@ object Utils {
         )
     }
 
+    fun clickSlot(slot: Int, cwid : Int) {
+        if (cwid == -1) return
+        mc.netHandler.addToSendQueue(C0EPacketClickWindow(cwid, slot, 0, 0, null, 0))
+    }
 }
 
 object Hclip {
@@ -139,24 +145,25 @@ object Hclip {
 
 object lavaClip {
     var lavaclipping = false
-    var veloReceived = true
+    var velocancelled = true
     var lavaClipDistance: Float = 40f
 
     @SubscribeEvent
     fun onRender(event: RenderWorldLastEvent) {
         if (!lavaclipping || !mc.thePlayer.isInLava) return
             lavaclipping = false
+            velocancelled = false
         relativeClip(0f, -lavaClipDistance, 0f)
     }
 
     @SubscribeEvent
     fun onPacket(event: ReceivePacketEvent) {
-        if (veloReceived) return
+        if (velocancelled) return
         if (event.packet !is S12PacketEntityVelocity) return
         if (event.packet.entityID != mc.thePlayer.entityId) return
         if (event.packet.motionY == 28000) {
             event.isCanceled = true
-            veloReceived = true
+            velocancelled = true
     }
     }
 
@@ -164,7 +171,7 @@ object lavaClip {
     fun onOverlay(event: RenderGameOverlayEvent.Post) {
         if (event.type != RenderGameOverlayEvent.ElementType.HOTBAR || !lavaclipping || mc.ingameGUI == null) return
         val sr = ScaledResolution(mc)
-        val text = "Lava clipping $lavaClipDistance"
+        val text = "§0[§6Yharim§0] §8»§r Lava clipping $lavaClipDistance"
         val width = sr.scaledWidth / 2 - mc.fontRendererObj.getStringWidth(text) / 2
         renderText(
             text = text,
@@ -177,10 +184,8 @@ object lavaClip {
         lavaClipDistance = round(distance)
         if (!lavaclipping) {
             lavaclipping = true
-            veloReceived = false
         } else {
             lavaclipping = false
-            veloReceived = true
         }
     }
 }

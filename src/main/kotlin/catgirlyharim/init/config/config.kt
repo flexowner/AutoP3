@@ -1,6 +1,7 @@
 package catgirlyharim.init.config
 
 import catgirlyharim.init.CatgirlYharim.Companion.mc
+import catgirlyharim.init.features.petKeyBinds.equipPet
 import catgirlyharim.init.utils.Hclip.hclip
 import catgirlyharim.init.utils.lavaClip.toggleLavaClip
 
@@ -14,24 +15,24 @@ import cc.polyfrost.oneconfig.config.data.Mod
 import cc.polyfrost.oneconfig.config.data.ModType
 import org.lwjgl.input.Keyboard
 
-class MyConfig : Config(Mod("My Mod", ModType.SKYBLOCK), "config.json") {
+public class MyConfig : Config(Mod("CatgirlYharimAddons", ModType.SKYBLOCK), "config.json") {
 
     @KeyBind(
         name = "Hclip",
         category = "Clip",
         subcategory = "Hclip"
     )
-    var hclipKeyBind = OneKeyBind(Keyboard.KEY_G); // Initialize it with a default keybind
+    var hclipKeyBind = OneKeyBind(Keyboard.KEY_NONE); // Initialize it with a default keybind
 
     @KeyBind(
         name = "Lava Clip",
         category = "Clip",
         subcategory = "Lavaclip"
     )
-    var lavaClipKeyBind = OneKeyBind(Keyboard.KEY_G); // Initialize it with a default keybind
+    var lavaClipKeyBind = OneKeyBind(Keyboard.KEY_NONE); // Initialize it with a default keybind
 
     @Slider(
-        name = "Hclip distance",
+        name = "Hclip Distance",
         category = "Clip",
         subcategory = "Hclip",
         min = 1f,
@@ -49,6 +50,23 @@ class MyConfig : Config(Mod("My Mod", ModType.SKYBLOCK), "config.json") {
         step = 1
     )
     var lavaClipDistanceKeyBind: Float = 30f;
+
+    @Switch(
+        name = "Storm Clip",
+        category = "Clip",
+        subcategory = "Stormclip"
+    )
+    var stormClipActive = false
+
+    @Slider(
+        name = "Storm Clip",
+        category = "Clip",
+        subcategory = "Stormclip",
+        min = 10f,
+        max = 60f,
+        step = 1
+    )
+    var stormClipDistance = 40f
 
     @Switch(
         name = "AutoP3",
@@ -91,11 +109,61 @@ class MyConfig : Config(Mod("My Mod", ModType.SKYBLOCK), "config.json") {
     )
     var speedSimulation = false
 
-    @Switch(
-        name = "Always sprint",
-        category = "Simulation"
+    //Pet Index
+
+    @Slider(
+        name = "Index #1",
+        category = "Pets",
+        subcategory = "Index",
+        min = 10f,
+        max = 44f,
+        step = 1
     )
-    public var alwaysSprint = false
+    var petIndexOne = 10
+
+    @Slider(
+        name = "Index #2",
+        category = "Pets",
+        subcategory = "Index",
+        min = 10f,
+        max = 44f,
+        step = 1
+    )
+    var petIndexTwo = 10
+
+    @Slider(
+        name = "Index #3",
+        category = "Pets",
+        subcategory = "Index",
+        min = 10f,
+        max = 44f,
+        step = 1
+    )
+    var petIndexThree = 10
+
+    //Pet Keybinds
+
+    @KeyBind(
+        name = "Pet Keybind #1",
+        category = "Pets",
+        subcategory = "Index",
+    )
+    var petKeybindOne = OneKeyBind(Keyboard.KEY_NONE)
+
+    @KeyBind(
+        name = "Pet Keybind #1",
+        category = "Pets",
+        subcategory = "Index",
+    )
+    var petKeybindTwo = OneKeyBind(Keyboard.KEY_NONE)
+
+    @KeyBind(
+        name = "Pet Keybind #1",
+        category = "Pets",
+        subcategory = "Index",
+    )
+    var petKeybindThree = OneKeyBind(Keyboard.KEY_NONE)
+
     init {
         initialize()
         registerKeyBind(hclipKeyBind) {
@@ -103,6 +171,15 @@ class MyConfig : Config(Mod("My Mod", ModType.SKYBLOCK), "config.json") {
         }
         registerKeyBind(lavaClipKeyBind) {
             toggleLavaClip(lavaClipDistanceKeyBind)
+        }
+        registerKeyBind(petKeybindOne) {
+            equipPet(petIndexOne)
+        }
+        registerKeyBind(petKeybindTwo) {
+            equipPet(petIndexTwo)
+        }
+        registerKeyBind(petKeybindThree) {
+            equipPet(petIndexThree)
         }
     }
 }

@@ -1,9 +1,9 @@
 
 {
-  "minVersion": "0.8",
+  "minVersion": "0.6",
   "compatibilityLevel": "JAVA_8",
   "package": "catgirlyharim.init.mixins",
-  "refmap": "mixins.refmap.json",
+  "refmap": "mixins.cgy.refmap.json",
   "mixins": [
     "entity.MixinEntity",
     "entity.MixinEntityLivingBase",

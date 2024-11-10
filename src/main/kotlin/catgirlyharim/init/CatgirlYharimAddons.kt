@@ -1,23 +1,21 @@
 package catgirlyharim.init
 
 import catgirlyharim.init.config.MyConfig
-import catgirlyharim.init.features.AlwaysSprint
 import catgirlyharim.init.features.AutoP3
-import catgirlyharim.init.features.AutoP3.P3Command
+import catgirlyharim.init.features.PearlClip
+import catgirlyharim.init.features.PearlClipCommand
 import catgirlyharim.init.features.RingManager
 import catgirlyharim.init.features.Simulation
+import catgirlyharim.init.features.StormClip
+import catgirlyharim.init.features.petKeyBinds
 import catgirlyharim.init.utils.*
 import net.minecraft.client.Minecraft
-import net.minecraft.client.settings.KeyBinding
 import net.minecraft.command.CommandBase
 import net.minecraft.command.ICommandSender
 import net.minecraftforge.client.ClientCommandHandler
 import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import org.lwjgl.input.Keyboard
-
 
 class CgyCommands : CommandBase() {
     override fun getCommandName(): String {
@@ -26,7 +24,7 @@ class CgyCommands : CommandBase() {
 
     override fun getCommandAliases(): List<String> {
         return listOf(
-            "cgy"
+            "cgyforge"
         )
     }
 
@@ -56,13 +54,14 @@ class CatgirlYharim {
         config = MyConfig()
         listOf(
             CgyCommands(),
+            AutoP3.P3Command,
+            PearlClipCommand()
         ).forEach {
             ClientCommandHandler.instance.registerCommand((it))
         }
 
         listOf(
             this,
-            P3Command,
             Hclip,
             MyConfig(),
             AutoP3,
@@ -70,13 +69,15 @@ class CatgirlYharim {
             lavaClip,
             edgeJump,
             Simulation,
-            AlwaysSprint,
             HUDRenderUtils,
             MovementUtils,
             WorldRenderUtils,
             ClientListener,
             Utils,
-            RingManager
+            RingManager,
+            PearlClip,
+            StormClip,
+            petKeyBinds
         ).forEach(MinecraftForge.EVENT_BUS::register)
 
         //keyBinds.forEach(ClientRegistry::registerKeyBinding)

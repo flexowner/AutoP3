@@ -25,6 +25,7 @@ import catgirlyharim.init.utils.Utils.swapFromName
 import catgirlyharim.init.utils.WorldRenderUtils.drawSquareTwo
 import catgirlyharim.init.utils.edgeJump.toggleEdging
 import catgirlyharim.init.utils.lavaClip.toggleLavaClip
+import cc.polyfrost.oneconfig.events.event.WorldLoadEvent
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
@@ -36,6 +37,7 @@ import net.minecraft.util.ChatComponentText
 import net.minecraft.util.ChatStyle
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import net.minecraftforge.client.event.RenderWorldLastEvent
+import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import java.awt.Color.*
 import java.io.File
@@ -99,12 +101,12 @@ object AutoP3 {
             val distanceY = (playerY - ring.y)
             val distanceZ = abs(playerZ - ring.z)
 
-            if ((distanceX > (ring.width / 2) || (distanceY >= (ring.height - 0.5) || distanceY < 0) || distanceZ > (ring.width / 2))) {
+            if ((distanceX > (ring.width / 2) || (distanceY >= (ring.height) || distanceY < 0) || distanceZ > (ring.width / 2))) {
                 ring.active = true
             }
 
             if (!ring.active || config!!.editmode || cooldown) return@forEach
-            if (distanceX < (ring.width / 2) && distanceY < (ring.height - 0.5) && distanceY >= 0 && distanceZ < (ring.width / 2)) {
+            if (distanceX < (ring.width / 2) && distanceY < (ring.height) && distanceY >= 0 && distanceZ < (ring.width / 2)) {
                 ring.active = false
                 if (ring.looking == true) rotate(ring.yaw, ring.pitch)
                 if (ring.stopping == true) stopVelo()
@@ -281,7 +283,7 @@ object P3Command : CommandBase() {
             }
             "remove" -> {
                 val range = args.getOrNull(1)?.toDoubleOrNull() ?: 2.0 // Default range to 2 if not provided
-                rings = rings.filter { ring ->
+                allrings = allrings.filter { ring ->
                     // Filter rings based on the route and distance criteria
                     if (ring.route != config!!.selectedRoute) return@filter true
                     val distance = distanceToPlayer(ring.x, ring.y, ring.z)
@@ -389,6 +391,11 @@ object RingManager {
             )
         }
         file.writeText(gson.toJson(filteredRings))
+    }
+
+    @SubscribeEvent
+    fun onLoad(event: WorldEvent.Load) {
+        loadRings()
     }
 }
 data class Ring(
