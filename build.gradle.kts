@@ -16,12 +16,10 @@ buildscript {
         classpath("com.google.code.gson:gson:2.8.9")
     }
 }
-//Constants:
 
+// Constants:
 val baseGroup: String by project
 val mcVersion: String by project
-val version: String by project
-val mixinGroup = "$baseGroup.mixin"
 val modid: String by project
 val transformerFile = file("src/main/resources/accesstransformer.cfg")
 
@@ -35,7 +33,6 @@ loom {
     log4jConfigs.from(file("log4j2.xml"))
     launchConfigs {
         "client" {
-            // If you don't want mixins, remove these lines
             property("mixin.debug", "true")
             arg("--tweakClass", "org.spongepowered.asm.launch.MixinTweaker")
         }
@@ -43,26 +40,22 @@ loom {
     runConfigs {
         "client" {
             if (SystemUtils.IS_OS_MAC_OSX) {
-                // This argument causes a crash on macOS
                 vmArgs.remove("-XstartOnFirstThread")
             }
         }
         remove(getByName("server"))
     }
     launchConfigs.named("client") {
-        // Loads OneConfig in dev env. Replace other tweak classes with this, but keep any other attributes!
         arg("--tweakClass", "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker")
     }
     forge {
         pack200Provider.set(dev.architectury.pack200.java.Pack200Adapter())
-        // If you don't want mixins, remove this lines
         mixinConfig("mixins.cgy.json")
-	    if (transformerFile.exists()) {
-			println("Installing access transformer")
-		    accessTransformer(transformerFile)
-	    }
+        if (transformerFile.exists()) {
+            println("Installing access transformer")
+            accessTransformer(transformerFile)
+        }
     }
-    // If you don't want mixins, remove these lines
     mixin {
         defaultRefmapName.set("mixins.cgy.refmap.json")
     }
@@ -78,23 +71,10 @@ sourceSets.main {
     kotlin.destinationDirectory.set(java.destinationDirectory)
 }
 
-// Dependencies:
-
-tasks {
-    jar { // loads OneConfig at launch. Add these launch attributes but keep your old attributes!
-        manifest.attributes += mapOf(
-            "ModSide" to "CLIENT",
-            "TweakOrder" to 0,
-            "ForceLoadAsMod" to true,
-            "TweakClass" to "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"
-        )
-    }
-}
-
+// Dependencies and repositories:
 repositories {
     mavenCentral()
     maven("https://repo.spongepowered.org/maven/")
-    // If you don't want to log in with your real minecraft account, remove this line
     maven("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1")
     maven("https://repo.polyfrost.cc/releases")
 }
@@ -107,21 +87,12 @@ dependencies {
     minecraft("com.mojang:minecraft:1.8.9")
     mappings("de.oceanlabs.mcp:mcp_stable:22-1.8.9")
     forge("net.minecraftforge:forge:1.8.9-11.15.1.2318-1.8.9")
-
-
     shadowImpl(kotlin("stdlib-jdk8"))
-
-    // If you don't want mixins, remove these lines
-    shadowImpl("org.spongepowered:mixin:0.7.11-SNAPSHOT") {
-        isTransitive = false
-    }
+    shadowImpl("org.spongepowered:mixin:0.7.11-SNAPSHOT") { isTransitive = false }
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT")
-
-    compileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+") // Should not be included in jar
-    shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+") // Should be included in jar
+    compileOnly("cc.polyfrost:oneconfig-1.8.9-forge:0.2.2-alpha+")
+    shadowImpl("cc.polyfrost:oneconfig-wrapper-launchwrapper:1.0.0-beta+")
 }
-
-// Tasks:
 
 tasks.withType(JavaCompile::class) {
     options.encoding = "UTF-8"
@@ -129,16 +100,14 @@ tasks.withType(JavaCompile::class) {
 
 tasks.withType(org.gradle.jvm.tasks.Jar::class) {
     archiveBaseName.set(modid)
-    manifest.attributes.run {
-        this["FMLCorePluginContainsFMLMod"] = "true"
-        this["ForceLoadAsMod"] = "true"
-
-        // If you don't want mixins, remove these lines
-        this["TweakClass"] = "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"
-        this["MixinConfigs"] = "mixins.cgy.json"
-	    if (transformerFile.exists())
-			this["FMLAT"] = "cgy_at.cfg"
-    }
+    manifest.attributes(
+        "ModSide" to "CLIENT",
+        "TweakOrder" to 0,
+        "ForceLoadAsMod" to true,
+        "TweakClass" to "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker",
+        "MixinConfigs" to "mixins.cgy.json"
+    )
+    if (transformerFile.exists()) manifest.attributes["FMLAT"] = "cgy_at.cfg"
 }
 
 tasks.processResources {
@@ -146,14 +115,11 @@ tasks.processResources {
     inputs.property("mcversion", mcVersion)
     inputs.property("modid", modid)
     inputs.property("basePackage", baseGroup)
-
     filesMatching(listOf("mcmod.info", "mixins.cgy.json")) {
         expand(inputs.properties)
     }
-
     rename("accesstransformer.cfg", "META-INF/cgy_at.cfg")
 }
-
 
 val remapJar by tasks.named<net.fabricmc.loom.task.RemapJarTask>("remapJar") {
     archiveClassifier.set("")
@@ -164,7 +130,6 @@ val remapJar by tasks.named<net.fabricmc.loom.task.RemapJarTask>("remapJar") {
 tasks.jar {
     archiveClassifier.set("without-deps")
     destinationDirectory.set(layout.buildDirectory.dir("intermediates"))
-
     manifest {
         attributes(
             "ModSide" to "CLIENT",
@@ -176,30 +141,10 @@ tasks.jar {
     }
 }
 
-tasks {
-    jar { // loads OneConfig at launch. Add these launch attributes but keep your old attributes!
-        manifest.attributes += mapOf(
-            "ModSide" to "CLIENT",
-            "TweakOrder" to 0,
-            "ForceLoadAsMod" to true,
-            "TweakClass" to "cc.polyfrost.oneconfig.loader.stage0.LaunchWrapperTweaker"
-        )
-    }
-}
-
 tasks.shadowJar {
     destinationDirectory.set(layout.buildDirectory.dir("intermediates"))
     archiveClassifier.set("non-obfuscated-with-deps")
     configurations = listOf(shadowImpl)
-    doLast {
-        configurations.forEach {
-            println("Copying dependencies into mod: ${it.files}")
-        }
-    }
-
-    // If you want to include other dependencies and shadow them, you can relocate them in here
-    fun relocate(name: String) = relocate(name, "$baseGroup.deps.$name")
 }
 
 tasks.assemble.get().dependsOn(tasks.remapJar)
-

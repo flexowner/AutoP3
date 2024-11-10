@@ -68,7 +68,7 @@ object AutoP3 {
     fun onRenderRing(event: RenderWorldLastEvent) {
         if (!config!!.autoP3Active || !inp3) return
         rings.forEach{ring ->
-            if (ring.route != config!!.selectedRoute) return@forEach
+            if (ring.route != config!!.selectedRoute || !ring.active) return@forEach
             val color = when (ring.type) {
                 "look" -> pink
                 "stop" -> red
@@ -82,7 +82,6 @@ object AutoP3 {
                 "walk" -> green
                 else -> black
             }
-            if(!ring.active) return
                 drawSquareTwo(ring.x, ring.y + 0.05, ring.z, ring.width.toDouble(), ring.width.toDouble(), color, 4f, phase = false, relocate = true)
                 drawSquareTwo(ring.x, ring.y + ring.height / 2, ring.z, ring.width.toDouble(), ring.width.toDouble(), color, 4f, phase = false, relocate = true)
                 drawSquareTwo(ring.x, ring.y + ring.height, ring.z, ring.width.toDouble(), ring.width.toDouble(), color, 4f, phase = false, relocate = true)

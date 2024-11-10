@@ -63,7 +63,6 @@ class CatgirlYharim {
         listOf(
             this,
             Hclip,
-            MyConfig(),
             AutoP3,
             ServerRotateUtils,
             lavaClip,
@@ -80,13 +79,7 @@ class CatgirlYharim {
             petKeyBinds
         ).forEach(MinecraftForge.EVENT_BUS::register)
 
-        //keyBinds.forEach(ClientRegistry::registerKeyBinding)
     }
-/*
-    @Subscribe
-    fun onInit(event: InitializationEvent?) {
-        config = MyConfig()
-    }*/
 
     companion object {
         val mc: Minecraft = Minecraft.getMinecraft()
