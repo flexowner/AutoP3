@@ -1,7 +1,6 @@
 package catgirlyharim.init
 
 import catgirlyharim.init.config.MyConfig
-import catgirlyharim.init.features.AutoMask
 import catgirlyharim.init.features.AutoP3
 import catgirlyharim.init.features.BossEsp
 import catgirlyharim.init.features.PearlClip
@@ -82,7 +81,6 @@ class CatgirlYharim {
             petKeyBinds,
             BossEsp,
             TerminalEsp,
-            AutoMask
         ).forEach(MinecraftForge.EVENT_BUS::register)
 
     }
