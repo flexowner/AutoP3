@@ -6,6 +6,7 @@ import catgirlyharim.init.utils.Hclip.hclip
 import catgirlyharim.init.utils.lavaClip.toggleLavaClip
 
 import cc.polyfrost.oneconfig.config.Config
+import cc.polyfrost.oneconfig.config.annotations.Dropdown
 import cc.polyfrost.oneconfig.config.annotations.KeyBind
 import cc.polyfrost.oneconfig.config.annotations.Slider
 import cc.polyfrost.oneconfig.config.annotations.Switch
@@ -71,18 +72,53 @@ public class MyConfig : Config(Mod("CatgirlYharimAddons", ModType.SKYBLOCK), "co
     @Switch(
         name = "AutoP3",
         category = "AutoP3",
+        subcategory = "Main"
     )
     var autoP3Active = false
 
+    @Switch(
+        name = "Select Route on Boss start!",
+        category = "AutoP3",
+        subcategory = "Route",
+    )
+    var onBossStart = false
+
+    @Switch(
+        name = "Select Route on P3 start!",
+        category = "AutoP3",
+        subcategory = "Route",
+    )
+    var onP3Start = false
+
     @Text(
         name = "Route",
+        category = "AutoP3",
+        subcategory = "Main",
+        placeholder = "Select a route!",
+        secure = false,
+        multiline = false
+    )
+    var selectedRoute = ""
+
+    @Text(
+        name = "Boss start Route",
         category = "AutoP3",
         subcategory = "Route",
         placeholder = "Select a route!",
         secure = false,
         multiline = false
     )
-    var selectedRoute = ""
+    var BossStartRoute = ""
+
+    @Text(
+        name = "P3 start Route",
+        category = "AutoP3",
+        subcategory = "Route",
+        placeholder = "Select a route!",
+        secure = false,
+        multiline = false
+    )
+    var P3StartRoute = ""
 
     @Switch(
         name = "Editmode",
@@ -163,6 +199,38 @@ public class MyConfig : Config(Mod("CatgirlYharimAddons", ModType.SKYBLOCK), "co
         subcategory = "Index",
     )
     var petKeybindThree = OneKeyBind(Keyboard.KEY_NONE)
+
+    @Switch(
+        name = "Wither ESP",
+        category = "ESP",
+        subcategory = "Wither"
+    )
+    var bossEsp = false
+
+    @Switch(
+        name = "Terminal ESP",
+        category = "ESP",
+        subcategory = "Terminal"
+    )
+    var terminalEsp = false
+
+    @Slider(
+        name = "ESP Opacity",
+        category = "ESP",
+        subcategory = "Customization",
+        min = 0f,
+        max = 1f,
+        step = 0
+    )
+    var opacityEsp = 0.5f
+
+    @Dropdown(
+        name = "ESP Color",
+        category = "ESP",
+        subcategory = "Customization",
+        options = arrayOf("White", "Gray", "Black", "Pink", "Red", "Yellow", "Green", "Cyan", "Blue")
+    )
+    var colorEsp = 7
 
     init {
         initialize()

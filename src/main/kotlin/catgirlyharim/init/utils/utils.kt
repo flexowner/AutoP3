@@ -23,7 +23,20 @@ import net.minecraft.util.ChatStyle
 import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import java.awt.Color.*
 import kotlin.math.*
+
+val colorMap = mapOf(
+    0 to white,
+    1 to gray,
+    2 to black,
+    3 to pink,
+    4 to red,
+    5 to yellow,
+    6 to green,
+    7 to cyan,
+    8 to blue
+)
 
 object Utils {
 
@@ -105,7 +118,7 @@ object Utils {
 
     fun clickSlot(slot: Int, cwid : Int) {
         if (cwid == -1) return
-        mc.netHandler.addToSendQueue(C0EPacketClickWindow(cwid, slot, 0, 0, null, 0))
+        mc.netHandler.networkManager.sendPacket(C0EPacketClickWindow(cwid, slot, 0, 0, null, 0))
     }
 }
 

@@ -18,6 +18,7 @@ object Simulation {
             scheduleTask(4) {
                 veloSent = false
             }
+            return
         }
         if (event.phase !== TickEvent.Phase.START) return
         if (!config!!.activeSimulation) return

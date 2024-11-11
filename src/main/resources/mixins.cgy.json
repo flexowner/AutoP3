@@ -12,6 +12,7 @@
   "client": [
     "MixinMinecraft",
     "MixinNetworkManager",
+    "MixinFMLHandshakeMessage",
     "entity.MixinAbstractClientPlayer",
     "entity.MovementUpdateEvent",
     "accessors.IEntityPlayerSPAccessor"

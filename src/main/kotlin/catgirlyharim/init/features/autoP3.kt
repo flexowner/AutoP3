@@ -25,7 +25,6 @@ import catgirlyharim.init.utils.Utils.swapFromName
 import catgirlyharim.init.utils.WorldRenderUtils.drawSquareTwo
 import catgirlyharim.init.utils.edgeJump.toggleEdging
 import catgirlyharim.init.utils.lavaClip.toggleLavaClip
-import cc.polyfrost.oneconfig.events.event.WorldLoadEvent
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
@@ -50,15 +49,25 @@ object AutoP3 {
     var cooldown = false
 
     @SubscribeEvent
+    fun onLoad(event: WorldEvent.Unload) {
+        inp3 = false
+    }
+
+    @SubscribeEvent
     fun onChat(event: ClientChatReceivedEvent) {
         val message = event.message.unformattedText
+        if (message.contains("[BOSS] Maxor: WELL! WELL! WELL! LOOK WHO'S HERE!")) {
+            if (config!!.onBossStart) config!!.selectedRoute = config!!.BossStartRoute
+            loadRings()
+        }
         if (message.contains("[BOSS] Storm: I should have known that I stood no chance.")) {
             inp3 = true
             config!!.autoP3Active = true
+            if (config!!.onP3Start) config!!.selectedRoute = config!!.P3StartRoute
             loadRings()
             //modMessage("P3 started!")
         }
-        if (message.contains("[BOSS] Goldor: You have done it, you destroyed the factory…")) { // Change to necron death
+        if (message.contains("[BOSS] Necron: All this, for nothing...")) {
             inp3 = false
             //modMessage("P3 ended!")
         }
@@ -80,6 +89,7 @@ object AutoP3 {
                 "block" -> blue
                 "edge" -> pink
                 "walk" -> green
+                "wait" -> white
                 else -> black
             }
                 drawSquareTwo(ring.x, ring.y + 0.05, ring.z, ring.width.toDouble(), ring.width.toDouble(), color, 4f, phase = false, relocate = true)
@@ -180,6 +190,14 @@ object AutoP3 {
                         toggleEdging()
                         modMessage("Edging")
                     }
+                    "wait" -> {
+                        modMessage("Waiting")
+                        var delay = ring.delay!!.toInt() ?: 19
+
+                        scheduleTask(ring.delay!!.toInt()) {
+                            walk()
+                        }
+                    }
                     else -> sendChat("Invalid ring: ${ring.type}")
             }
             }
@@ -222,7 +240,8 @@ object P3Command : CommandBase() {
                         "block",
                         "edge",
                         "vclip",
-                        "jump"
+                        "jump",
+                        "wait"
                     ).contains((type))
                 ) {
                     modMessage("Invalid ring!")
