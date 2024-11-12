@@ -10,6 +10,7 @@ import catgirlyharim.init.utils.ServerRotateUtils.set
 import catgirlyharim.init.utils.Utils.airClick
 import catgirlyharim.init.utils.Utils.modMessage
 import catgirlyharim.init.utils.Utils.relativeClip
+import catgirlyharim.init.utils.Utils.setPos
 import catgirlyharim.init.utils.Utils.swapFromName
 import cc.polyfrost.oneconfig.libs.eventbus.Subscribe
 import net.minecraft.command.CommandBase
@@ -23,8 +24,9 @@ object PearlClip{
     @SubscribeEvent
     fun onPacket(event: ReceivePacketEvent) {
         if (!active || event.packet !is S08PacketPlayerPosLook) return
+        val posY = mc.thePlayer.posY
         scheduleTask(0) {
-            relativeClip(0f, -distance, 0f)
+            setPos(event.packet.x, posY - distance, event.packet.x)
             active = false
         }
     }

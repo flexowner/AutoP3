@@ -2,6 +2,8 @@ package catgirlyharim.init.features
 
 import catgirlyharim.init.CatgirlYharim.Companion.config
 import catgirlyharim.init.CatgirlYharim.Companion.mc
+import catgirlyharim.init.events.ReceivePacketEvent
+import catgirlyharim.init.features.AutoP3.inp3
 import catgirlyharim.init.features.RingManager.allrings
 import catgirlyharim.init.features.RingManager.loadRings
 import catgirlyharim.init.features.RingManager.rings
@@ -17,6 +19,7 @@ import catgirlyharim.init.utils.ServerRotateUtils.set
 import catgirlyharim.init.utils.Utils.airClick
 import catgirlyharim.init.utils.Utils.distanceToPlayer
 import catgirlyharim.init.utils.Utils.getYawAndPitch
+import catgirlyharim.init.utils.Utils.hexToColor
 import catgirlyharim.init.utils.Utils.leftClick
 import catgirlyharim.init.utils.Utils.modMessage
 import catgirlyharim.init.utils.Utils.rotate
@@ -32,12 +35,14 @@ import net.minecraft.command.CommandBase
 import net.minecraft.command.ICommandSender
 import net.minecraft.event.ClickEvent
 import net.minecraft.event.HoverEvent
+import net.minecraft.network.play.server.S2DPacketOpenWindow
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.ChatStyle
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import java.awt.Color
 import java.awt.Color.*
 import java.io.File
 
@@ -47,6 +52,7 @@ import kotlin.math.abs
 object AutoP3 {
     var inp3 = false
     var cooldown = false
+    var walkOnTermOpen = false
 
     @SubscribeEvent
     fun onLoad(event: WorldEvent.Unload) {
@@ -59,6 +65,7 @@ object AutoP3 {
         if (message.contains("[BOSS] Maxor: WELL! WELL! WELL! LOOK WHO'S HERE!")) {
             if (config!!.onBossStart) config!!.selectedRoute = config!!.BossStartRoute
             loadRings()
+            inp3 = true
         }
         if (message.contains("[BOSS] Storm: I should have known that I stood no chance.")) {
             inp3 = true
@@ -77,24 +84,30 @@ object AutoP3 {
     fun onRenderRing(event: RenderWorldLastEvent) {
         if (!config!!.autoP3Active || !inp3) return
         rings.forEach{ring ->
-            if (ring.route != config!!.selectedRoute || !ring.active) return@forEach
-            val color = when (ring.type) {
-                "look" -> pink
-                "stop" -> red
-                "boom" -> cyan
-                "jump" -> gray
-                "hclip" -> black
-                "bonzo" -> white
-                "vclip" -> yellow
-                "block" -> blue
-                "edge" -> pink
-                "walk" -> green
-                "wait" -> white
-                else -> black
+            if (ring.route != config!!.selectedRoute || !ring.active) return
+            if (distanceToPlayer(ring.x, ring.y,ring.z) > config!!.renderDistance) return
+            var color = Color(1,1,1,1)
+            color = when (ring.type) {
+                "look" -> config!!.lookColor.toJavaColor()
+                "stop" -> config!!.stopColor.toJavaColor()
+                "boom" -> config!!.boomColor.toJavaColor()
+                "jump" -> config!!.jumpColor.toJavaColor()
+                "hclip" -> config!!.hclipColor.toJavaColor()
+                "bonzo" -> config!!.bonzoColor.toJavaColor()
+                "vclip" -> config!!.vclipColor.toJavaColor()
+                "block" -> config!!.blockColor.toJavaColor()
+                "edge" -> config!!.edgeColor.toJavaColor()
+                "walk" -> config!!.walkColor.toJavaColor()
+                "wait" -> config!!.waitColor.toJavaColor()
+                "term" -> config!!.termColor.toJavaColor()
+                else -> config!!.walkColor.toJavaColor()
             }
+            if (config!!.fuckEpilepticPeople) color = config!!.lookColor.toJavaColor()
                 drawSquareTwo(ring.x, ring.y + 0.05, ring.z, ring.width.toDouble(), ring.width.toDouble(), color, 4f, phase = false, relocate = true)
-                drawSquareTwo(ring.x, ring.y + ring.height / 2, ring.z, ring.width.toDouble(), ring.width.toDouble(), color, 4f, phase = false, relocate = true)
-                drawSquareTwo(ring.x, ring.y + ring.height, ring.z, ring.width.toDouble(), ring.width.toDouble(), color, 4f, phase = false, relocate = true)
+                drawSquareTwo(ring.x, ring.y + ring.height / 2, ring.z, ring.width.toDouble(), ring.width.toDouble(),
+                    color, 4f, phase = false, relocate = true)
+                drawSquareTwo(ring.x, ring.y + ring.height, ring.z, ring.width.toDouble(), ring.width.toDouble(),
+                    color, 4f, phase = false, relocate = true)
         }
     }
 
@@ -198,10 +211,22 @@ object AutoP3 {
                             walk()
                         }
                     }
+                    "term" -> {
+                        modMessage("Waiting for term")
+                    }
                     else -> sendChat("Invalid ring: ${ring.type}")
             }
             }
         }
+    }
+
+    @SubscribeEvent
+    fun onTermOpen(event: ReceivePacketEvent) {
+        if (!walkOnTermOpen) return
+        if (event.packet !is S2DPacketOpenWindow) return
+        walk()
+        walkOnTermOpen = false
+        modMessage("Term found")
     }
 
 
@@ -241,7 +266,8 @@ object P3Command : CommandBase() {
                         "edge",
                         "vclip",
                         "jump",
-                        "wait"
+                        "wait",
+                        "term"
                     ).contains((type))
                 ) {
                     modMessage("Invalid ring!")
@@ -414,6 +440,11 @@ object RingManager {
     @SubscribeEvent
     fun onLoad(event: WorldEvent.Load) {
         loadRings()
+    }
+
+    @SubscribeEvent
+    fun onUnload(event: WorldEvent.Unload) {
+        inp3 = false
     }
 }
 data class Ring(

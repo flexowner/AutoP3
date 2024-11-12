@@ -82,7 +82,7 @@ object Utils {
                 }
             }
         }
-        sendChat("$name not found.")
+        modMessage("$name not found!")
         return false
     }
 
@@ -90,6 +90,10 @@ object Utils {
         mc.netHandler.networkManager.sendPacket(C08PacketPlayerBlockPlacement(mc.thePlayer.heldItem))
     }
 
+    fun setPos(x: Double, y: Double, z: Double) {
+        mc.thePlayer.setPosition(x, y, z)
+
+    }
     fun relativeClip(x: Float, y: Float, z: Float) {
         mc.thePlayer.setPosition(mc.thePlayer.posX + x,mc.thePlayer.posY + y,mc.thePlayer.posZ + z)
     }
@@ -119,6 +123,15 @@ object Utils {
     fun clickSlot(slot: Int, cwid : Int) {
         if (cwid == -1) return
         mc.netHandler.networkManager.sendPacket(C0EPacketClickWindow(cwid, slot, 0, 0, null, 0))
+    }
+
+    fun hexToColor(hex: String): Int {
+        return try {
+            // Remove the '#' if present and parse as hexadecimal integer
+            Integer.parseInt(hex.removePrefix("#"), 16)
+        } catch (e: NumberFormatException) {
+            0x000000 // Return black if hex is invalid
+        }
     }
 }
 
