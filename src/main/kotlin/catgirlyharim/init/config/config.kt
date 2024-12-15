@@ -4,6 +4,7 @@ import catgirlyharim.init.CatgirlYharim.Companion.mc
 import catgirlyharim.init.features.petKeyBinds.equipPet
 import catgirlyharim.init.utils.Hclip.hclip
 import catgirlyharim.init.utils.Utils.modMessage
+import catgirlyharim.init.utils.Utils.test
 import catgirlyharim.init.utils.lavaClip.toggleLavaClip
 
 import cc.polyfrost.oneconfig.config.Config
@@ -18,7 +19,10 @@ import cc.polyfrost.oneconfig.config.core.OneColor
 import cc.polyfrost.oneconfig.config.core.OneKeyBind
 import cc.polyfrost.oneconfig.config.data.Mod
 import cc.polyfrost.oneconfig.config.data.ModType
+import kotlinx.serialization.cbor.Cbor.Default.decodeFromByteArray
 import org.lwjgl.input.Keyboard
+import java.io.File
+import java.nio.file.Paths
 
 class MyConfig : Config(Mod("CatgirlYharimAddons", ModType.SKYBLOCK), "config.json") {
 

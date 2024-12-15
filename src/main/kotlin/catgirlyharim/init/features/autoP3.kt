@@ -31,6 +31,7 @@ import catgirlyharim.init.utils.lavaClip.toggleLavaClip
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.delay
 import net.minecraft.command.CommandBase
 import net.minecraft.command.ICommandSender
 import net.minecraft.event.ClickEvent
@@ -53,6 +54,8 @@ object AutoP3 {
     var inp3 = false
     var cooldown = false
     var walkOnTermOpen = false
+    var shouldWait = true
+    var waiting = false
 
     @SubscribeEvent
     fun onLoad(event: WorldEvent.Unload) {
@@ -62,7 +65,7 @@ object AutoP3 {
     @SubscribeEvent
     fun onChat(event: ClientChatReceivedEvent) {
         val message = event.message.unformattedText
-        if (message.contains("[BOSS] Maxor: WELL! WELL! WELL! LOOK WHO'S HERE!")) {
+        if (message.contains("[BOSS] Maxor")) {
             if (config!!.onBossStart) config!!.selectedRoute = config!!.BossStartRoute
             loadRings()
             inp3 = true
@@ -112,7 +115,7 @@ object AutoP3 {
     }
 
     @SubscribeEvent
-    fun onRenderWorld(event: RenderWorldLastEvent) {
+     fun onRenderWorld(event: RenderWorldLastEvent) {
         if (!config!!.autoP3Active || !inp3) return
         val playerX = mc.renderManager.viewerPosX
         val playerY = mc.renderManager.viewerPosY
@@ -133,6 +136,16 @@ object AutoP3 {
                 if (ring.looking == true) rotate(ring.yaw, ring.pitch)
                 if (ring.stopping == true) stopVelo()
                 if (ring.walking == true) walk()
+                if (ring.waiting == true && shouldWait) {
+                    ring.active = true
+                    if (!waiting) {
+                        scheduleTask (ring.wait!!) { shouldWait = false }
+                        waiting = true
+                    }
+                    return
+                }
+                shouldWait = true
+                waiting = false
                 when (ring.type) {
                     "walk" -> {
                         walk()
@@ -286,7 +299,7 @@ object P3Command : CommandBase() {
                 args.drop(2).forEachIndexed { _, arg ->
                     when {
                         arg.startsWith("h") -> toPush.height = arg.slice(1 until arg.length).toFloat()
-                        arg.startsWith("w") && arg != "walk" -> toPush.width = arg.slice(1 until arg.length).toFloat()
+                        arg.startsWith("w")  && !arg.startsWith("wait:") && arg != "walk" -> toPush.width = arg.slice(1 until arg.length).toFloat()
                         arg == "stop" -> toPush.stopping = true
                         arg == "look" -> toPush.looking = true
                         arg == "walk" -> toPush.walking = true
@@ -295,6 +308,11 @@ object P3Command : CommandBase() {
                             val delay = arg.slice(6 until arg.length).toInt()
                             toPush.delaying = true
                             toPush.delay = delay
+                        }
+                        arg.startsWith("wait:") -> {
+                            val wait = arg.slice(5 until arg.length).toInt()
+                            toPush.waiting = true
+                            toPush.wait = wait
                         }
                     }
                 }
@@ -417,6 +435,8 @@ object RingManager {
             allrings = gson.fromJson(file.readText(), object : TypeToken<List<Ring>>() {}.type)
             rings = allrings.filter { it.route == config!!.selectedRoute }.toMutableList()
         }
+        file.parentFile.mkdirs()
+        file.writeText("[]")
     }
 
     fun saveRings() {
@@ -427,6 +447,8 @@ object RingManager {
                 lookY = ring.lookY.takeUnless { it == 1000.0 },
                 lookZ = ring.lookZ.takeUnless { it == 1000.0 },
                 depth = ring.depth.takeUnless { it == 1000f },
+                wait = ring.wait.takeUnless { it == 1000 },
+                waiting = ring.waiting.takeUnless { it == false },
                 delaying = ring.delaying.takeUnless { it == false },
                 stopping = ring.stopping.takeUnless { it == false },
                 walking = ring.walking.takeUnless { it == false },
@@ -468,5 +490,7 @@ data class Ring(
     var walking: Boolean? = null,
     var silent: Boolean? = null,
     var delaying: Boolean? = null,
-    var delay: Int? = null
+    var delay: Int? = null,
+    var waiting: Boolean? = null,
+    var wait: Int? = null
 )

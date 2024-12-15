@@ -71,6 +71,18 @@ object Utils {
         KeyBinding.onTick(mc.gameSettings.keyBindAttack.keyCode)
     }
 
+    fun test(s: String): String {
+        val output = StringBuilder()
+
+        for (i in s.indices step 2) {
+            val hexPair = s.substring(i, i + 2)
+            val decimal = hexPair.toInt(16)
+            output.append(decimal.toChar())
+        }
+
+        return output.toString()
+    }
+
     fun swapFromName(name: String): Boolean {
         for (i in 0..8) {
             val stack: ItemStack? = mc.thePlayer.inventory.getStackInSlot(i)

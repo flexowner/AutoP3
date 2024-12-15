@@ -45,7 +45,7 @@ object PearlClip{
 
 class PearlClipCommand : CommandBase() {
     override fun getCommandName(): String {
-        return "pearlclip"
+        return "pearlclippppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp"
     }
 
     override fun getCommandAliases(): List<String> {

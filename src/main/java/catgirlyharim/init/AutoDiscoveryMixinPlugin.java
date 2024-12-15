@@ -1,9 +1,11 @@
 package catgirlyharim.init;
 
+import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.lib.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -186,3 +188,6 @@ public class AutoDiscoveryMixinPlugin implements IMixinConfigPlugin {
 
     }
 }
+
+
+

@@ -2,6 +2,7 @@ package catgirlyharim.init.utils
 
 import catgirlyharim.init.CatgirlYharim.Companion.config
 import catgirlyharim.init.CatgirlYharim.Companion.mc
+import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.WorldRenderer
@@ -20,6 +21,8 @@ import org.lwjgl.opengl.GL11.glLineWidth
 import org.lwjgl.opengl.GL11.glPopAttrib
 import org.lwjgl.opengl.GL11.glPopMatrix
 import java.awt.Color
+import java.io.File
+import java.nio.file.Paths
 import kotlin.math.round
 
 object WorldRenderUtils {
@@ -170,13 +173,14 @@ object WorldRenderUtils {
         GlStateManager.enableDepth()
         GlStateManager.disableBlend()
     }
-    fun drawP3box(x: Double, y: Double, z: Double, xWidth: Double, yHeight: Double, zWidth: Double, color: Color, thickness: Float = 3f, phase: Boolean = true, relocate: Boolean = true) {
 
+    fun drawP3box(x: Double, y: Double, z: Double, xWidth: Double, yHeight: Double, zWidth: Double, color: Color, thickness: Float = 3f, phase: Boolean = true, relocate: Boolean = true) {
         val yMiddle = (y + yHeight / 2)
         drawSquare(x, y + yHeight, z, xWidth, zWidth, color, thickness, phase, relocate)
         drawSquare(x, yMiddle, z, xWidth, zWidth, color, thickness, phase, relocate)
         drawSquare(x, y + 0.02, z, xWidth, zWidth, color, thickness, phase, relocate)
     }
+
     private fun drawSquare(x: Double, y: Double, z: Double, xWidth: Double, zWidth: Double, color: Color, thickness: Float = 3f, phase: Boolean = true, relocate: Boolean = true) {
         GlStateManager.disableLighting()
         GlStateManager.enableBlend()
