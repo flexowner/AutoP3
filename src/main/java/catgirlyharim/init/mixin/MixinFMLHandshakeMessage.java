@@ -1,4 +1,4 @@
-package catgirlyharim.init.mixins;
+package catgirlyharim.init.mixin;
 
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.ModContainer;

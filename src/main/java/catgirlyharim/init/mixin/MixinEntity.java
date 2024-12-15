@@ -1,4 +1,4 @@
-package catgirlyharim.init.mixins.entity;
+package catgirlyharim.init.mixin;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;

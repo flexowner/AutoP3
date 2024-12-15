@@ -2,12 +2,11 @@ package catgirlyharim.init.utils
 
 import catgirlyharim.init.CatgirlYharim.Companion.config
 import catgirlyharim.init.CatgirlYharim.Companion.mc
-import catgirlyharim.init.utils.MovementUtils.restartMovement
 import catgirlyharim.init.events.MovementUpdateEvent
 import catgirlyharim.init.events.ReceivePacketEvent
 import catgirlyharim.init.utils.MovementUtils.jump
+import catgirlyharim.init.utils.MovementUtils.restartMovement
 import catgirlyharim.init.utils.MovementUtils.stopMovement
-import catgirlyharim.init.utils.Utils.modMessage
 import catgirlyharim.init.utils.Utils.relativeClip
 import catgirlyharim.init.utils.WorldRenderUtils.renderText
 import net.minecraft.block.Block
@@ -69,18 +68,6 @@ object Utils {
 
     fun leftClick() {
         KeyBinding.onTick(mc.gameSettings.keyBindAttack.keyCode)
-    }
-
-    fun test(s: String): String {
-        val output = StringBuilder()
-
-        for (i in s.indices step 2) {
-            val hexPair = s.substring(i, i + 2)
-            val decimal = hexPair.toInt(16)
-            output.append(decimal.toChar())
-        }
-
-        return output.toString()
     }
 
     fun swapFromName(name: String): Boolean {

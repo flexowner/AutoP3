@@ -1,4 +1,4 @@
-package catgirlyharim.init.mixins.accessors;
+package catgirlyharim.init.mixin;
 
 import net.minecraft.client.entity.EntityPlayerSP;
 import org.spongepowered.asm.mixin.Mixin;

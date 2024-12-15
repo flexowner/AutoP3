@@ -1,20 +1,13 @@
 package catgirlyharim.init.utils
 
 import catgirlyharim.init.CatgirlYharim.Companion.mc
-import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.WorldRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import org.lwjgl.opengl.GL11
 import java.awt.Color
-import java.io.IOException
-import java.lang.reflect.Method
-import java.net.URL
-import javax.net.ssl.HttpsURLConnection
 
 /**
  * ## A Collection of methods for rendering 2D Objects in orthographic projection for the HUD or for a gui.

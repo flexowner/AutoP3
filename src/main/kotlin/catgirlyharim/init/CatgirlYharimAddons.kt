@@ -86,7 +86,7 @@ class CatgirlYharim {
     }
 
     companion object {
-        public val mc: Minecraft = Minecraft.getMinecraft()
+        val mc: Minecraft = Minecraft.getMinecraft()
         var config: MyConfig? = null
     }
 }

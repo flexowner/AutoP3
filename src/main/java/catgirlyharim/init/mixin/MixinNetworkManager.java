@@ -1,4 +1,4 @@
-package catgirlyharim.init.mixins;
+package catgirlyharim.init.mixin;
 
 import catgirlyharim.init.events.PacketSentEvent;
 import catgirlyharim.init.events.ReceiveChatPacketEvent;

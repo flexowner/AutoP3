@@ -1,4 +1,4 @@
-package catgirlyharim.init.mixins;
+package catgirlyharim.init.mixin;
 
 import catgirlyharim.init.events.PreKeyInputEvent;
 import catgirlyharim.init.events.PreMouseInputEvent;
@@ -18,6 +18,7 @@ public class MixinMinecraft {
         int k = (Keyboard.getEventKey() == 0) ? (Keyboard.getEventCharacter() + 256) : Keyboard.getEventKey();
         char character = Keyboard.getEventCharacter();
         if (Keyboard.getEventKeyState()) {
+            System.out.println("AAA");
             MinecraftForge.EVENT_BUS.post(new PreKeyInputEvent(k, character));
         }
     }

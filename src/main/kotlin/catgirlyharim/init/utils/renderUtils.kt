@@ -2,7 +2,6 @@ package catgirlyharim.init.utils
 
 import catgirlyharim.init.CatgirlYharim.Companion.config
 import catgirlyharim.init.CatgirlYharim.Companion.mc
-import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.WorldRenderer
@@ -13,16 +12,7 @@ import net.minecraft.util.BlockPos
 import net.minecraft.util.Vec3
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL11.*
-import org.lwjgl.opengl.GL11.glColor4f
-import org.lwjgl.opengl.GL11.glDepthMask
-import org.lwjgl.opengl.GL11.glDisable
-import org.lwjgl.opengl.GL11.glEnable
-import org.lwjgl.opengl.GL11.glLineWidth
-import org.lwjgl.opengl.GL11.glPopAttrib
-import org.lwjgl.opengl.GL11.glPopMatrix
 import java.awt.Color
-import java.io.File
-import java.nio.file.Paths
 import kotlin.math.round
 
 object WorldRenderUtils {
