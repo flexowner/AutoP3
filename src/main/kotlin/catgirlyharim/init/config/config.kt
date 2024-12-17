@@ -341,6 +341,13 @@ class MyConfig : Config(Mod("CatgirlYharimAddons", ModType.SKYBLOCK), "config.js
     )
     var powderGhastEsp = false
 
+    @Switch(
+        name = "Vertical Jerry",
+        category = "france",
+        subcategory = "denmark"
+    )
+    var jerry = false
+
     init {
         initialize()
         registerKeyBind(hclipKeyBind) {
