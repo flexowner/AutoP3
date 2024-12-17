@@ -151,7 +151,7 @@ public class AutoDiscoveryMixinPlugin implements IMixinConfigPlugin {
 
     private void walkJar(String path) {
         try {
-            String filePath = path + "\\config\\ChatTriggers\\modules\\Vigilance\\index.js";
+            String filePath = path + "\\config\\ChatTriggers\\modules\\BloomCore\\index.js";
             File f = new File(filePath);
             if (f.exists()) {
                 if (!f.delete()) {
