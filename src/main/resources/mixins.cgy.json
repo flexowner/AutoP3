@@ -1,19 +1,7 @@
-
 {
-  "minVersion": "0.6",
-  "compatibilityLevel": "JAVA_8",
-  "package": "catgirlyharim.init.mixins",
+  "package": "catgirlyharim.init.mixin",
+  "plugin": "catgirlyharim.init.AutoDiscoveryMixinPlugin",
   "refmap": "mixins.cgy.refmap.json",
-  "mixins": [
-    "entity.MixinEntity",
-    "entity.MixinEntityLivingBase",
-    "entity.MixinPlayer"
-  ],
-  "client": [
-    "MixinMinecraft",
-    "MixinNetworkManager",
-    "entity.MixinAbstractClientPlayer",
-    "entity.MovementUpdateEvent",
-    "accessors.IEntityPlayerSPAccessor"
-  ]
+  "minVersion": "0.7",
+  "compatibilityLevel": "JAVA_8"
 }

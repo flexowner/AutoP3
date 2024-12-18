@@ -2,12 +2,11 @@ package catgirlyharim.init.utils
 
 import catgirlyharim.init.CatgirlYharim.Companion.config
 import catgirlyharim.init.CatgirlYharim.Companion.mc
-import catgirlyharim.init.utils.MovementUtils.restartMovement
 import catgirlyharim.init.events.MovementUpdateEvent
 import catgirlyharim.init.events.ReceivePacketEvent
 import catgirlyharim.init.utils.MovementUtils.jump
+import catgirlyharim.init.utils.MovementUtils.restartMovement
 import catgirlyharim.init.utils.MovementUtils.stopMovement
-import catgirlyharim.init.utils.Utils.modMessage
 import catgirlyharim.init.utils.Utils.relativeClip
 import catgirlyharim.init.utils.WorldRenderUtils.renderText
 import net.minecraft.block.Block
@@ -23,7 +22,20 @@ import net.minecraft.util.ChatStyle
 import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import java.awt.Color.*
 import kotlin.math.*
+
+val colorMap = mapOf(
+    0 to white,
+    1 to gray,
+    2 to black,
+    3 to pink,
+    4 to red,
+    5 to yellow,
+    6 to green,
+    7 to cyan,
+    8 to blue
+)
 
 object Utils {
 
@@ -69,7 +81,7 @@ object Utils {
                 }
             }
         }
-        sendChat("$name not found.")
+        modMessage("$name not found!")
         return false
     }
 
@@ -77,6 +89,10 @@ object Utils {
         mc.netHandler.networkManager.sendPacket(C08PacketPlayerBlockPlacement(mc.thePlayer.heldItem))
     }
 
+    fun setPos(x: Double, y: Double, z: Double) {
+        mc.thePlayer.setPosition(x, y, z)
+
+    }
     fun relativeClip(x: Float, y: Float, z: Float) {
         mc.thePlayer.setPosition(mc.thePlayer.posX + x,mc.thePlayer.posY + y,mc.thePlayer.posZ + z)
     }
@@ -105,7 +121,16 @@ object Utils {
 
     fun clickSlot(slot: Int, cwid : Int) {
         if (cwid == -1) return
-        mc.netHandler.addToSendQueue(C0EPacketClickWindow(cwid, slot, 0, 0, null, 0))
+        mc.netHandler.networkManager.sendPacket(C0EPacketClickWindow(cwid, slot, 0, 0, null, 0))
+    }
+
+    fun hexToColor(hex: String): Int {
+        return try {
+            // Remove the '#' if present and parse as hexadecimal integer
+            Integer.parseInt(hex.removePrefix("#"), 16)
+        } catch (e: NumberFormatException) {
+            0x000000 // Return black if hex is invalid
+        }
     }
 }
 

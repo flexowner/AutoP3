@@ -14,11 +14,7 @@ object Simulation {
 
     @SubscribeEvent
     fun onWorldTick(event: TickEvent.WorldTickEvent) {
-        if (veloSent) {
-            scheduleTask(4) {
-                veloSent = false
-            }
-        }
+        if (veloSent) return
         if (event.phase !== TickEvent.Phase.START) return
         if (!config!!.activeSimulation) return
         if (mc.thePlayer == null || mc.theWorld == null) {
@@ -37,10 +33,16 @@ object Simulation {
             if (blockID == 10 || blockID == 11) {
                 mc.thePlayer.motionY = 3.5
                 veloSent = true
+                scheduleTask(19) {
+                    veloSent = false
+                }
             }
             if (blockID == 66) {
                 mc.thePlayer.motionY = 7.0
                 veloSent = true
+                scheduleTask(19) {
+                    veloSent = false
+                }
             }
         }
     }

@@ -1,4 +1,4 @@
-package catgirlyharim.init.mixins.entity;
+package catgirlyharim.init.mixin;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.potion.Potion;

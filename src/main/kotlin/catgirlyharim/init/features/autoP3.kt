@@ -2,6 +2,8 @@ package catgirlyharim.init.features
 
 import catgirlyharim.init.CatgirlYharim.Companion.config
 import catgirlyharim.init.CatgirlYharim.Companion.mc
+import catgirlyharim.init.events.ReceivePacketEvent
+import catgirlyharim.init.features.AutoP3.inp3
 import catgirlyharim.init.features.RingManager.allrings
 import catgirlyharim.init.features.RingManager.loadRings
 import catgirlyharim.init.features.RingManager.rings
@@ -17,6 +19,7 @@ import catgirlyharim.init.utils.ServerRotateUtils.set
 import catgirlyharim.init.utils.Utils.airClick
 import catgirlyharim.init.utils.Utils.distanceToPlayer
 import catgirlyharim.init.utils.Utils.getYawAndPitch
+import catgirlyharim.init.utils.Utils.hexToColor
 import catgirlyharim.init.utils.Utils.leftClick
 import catgirlyharim.init.utils.Utils.modMessage
 import catgirlyharim.init.utils.Utils.rotate
@@ -25,20 +28,22 @@ import catgirlyharim.init.utils.Utils.swapFromName
 import catgirlyharim.init.utils.WorldRenderUtils.drawSquareTwo
 import catgirlyharim.init.utils.edgeJump.toggleEdging
 import catgirlyharim.init.utils.lavaClip.toggleLavaClip
-import cc.polyfrost.oneconfig.events.event.WorldLoadEvent
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.delay
 import net.minecraft.command.CommandBase
 import net.minecraft.command.ICommandSender
 import net.minecraft.event.ClickEvent
 import net.minecraft.event.HoverEvent
+import net.minecraft.network.play.server.S2DPacketOpenWindow
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.ChatStyle
 import net.minecraftforge.client.event.ClientChatReceivedEvent
 import net.minecraftforge.client.event.RenderWorldLastEvent
 import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import java.awt.Color
 import java.awt.Color.*
 import java.io.File
 
@@ -48,17 +53,31 @@ import kotlin.math.abs
 object AutoP3 {
     var inp3 = false
     var cooldown = false
+    var walkOnTermOpen = false
+    var shouldWait = true
+    var waiting = false
+
+    @SubscribeEvent
+    fun onLoad(event: WorldEvent.Unload) {
+        inp3 = false
+    }
 
     @SubscribeEvent
     fun onChat(event: ClientChatReceivedEvent) {
         val message = event.message.unformattedText
+        if (message.contains("[BOSS] Maxor")) {
+            if (config!!.onBossStart) config!!.selectedRoute = config!!.BossStartRoute
+            loadRings()
+            inp3 = true
+        }
         if (message.contains("[BOSS] Storm: I should have known that I stood no chance.")) {
             inp3 = true
             config!!.autoP3Active = true
+            if (config!!.onP3Start) config!!.selectedRoute = config!!.P3StartRoute
             loadRings()
             //modMessage("P3 started!")
         }
-        if (message.contains("[BOSS] Goldor: You have done it, you destroyed the factory…")) { // Change to necron death
+        if (message.contains("[BOSS] Necron: All this, for nothing...")) {
             inp3 = false
             //modMessage("P3 ended!")
         }
@@ -68,28 +87,35 @@ object AutoP3 {
     fun onRenderRing(event: RenderWorldLastEvent) {
         if (!config!!.autoP3Active || !inp3) return
         rings.forEach{ring ->
-            if (ring.route != config!!.selectedRoute || !ring.active) return@forEach
-            val color = when (ring.type) {
-                "look" -> pink
-                "stop" -> red
-                "boom" -> cyan
-                "jump" -> gray
-                "hclip" -> black
-                "bonzo" -> white
-                "vclip" -> yellow
-                "block" -> blue
-                "edge" -> pink
-                "walk" -> green
-                else -> black
+            if (ring.route != config!!.selectedRoute || !ring.active) return
+            if (distanceToPlayer(ring.x, ring.y,ring.z) > config!!.renderDistance) return
+            var color = Color(1,1,1,1)
+            color = when (ring.type) {
+                "look" -> config!!.lookColor.toJavaColor()
+                "stop" -> config!!.stopColor.toJavaColor()
+                "boom" -> config!!.boomColor.toJavaColor()
+                "jump" -> config!!.jumpColor.toJavaColor()
+                "hclip" -> config!!.hclipColor.toJavaColor()
+                "bonzo" -> config!!.bonzoColor.toJavaColor()
+                "vclip" -> config!!.vclipColor.toJavaColor()
+                "block" -> config!!.blockColor.toJavaColor()
+                "edge" -> config!!.edgeColor.toJavaColor()
+                "walk" -> config!!.walkColor.toJavaColor()
+                "wait" -> config!!.waitColor.toJavaColor()
+                "term" -> config!!.termColor.toJavaColor()
+                else -> config!!.walkColor.toJavaColor()
             }
+            if (config!!.fuckEpilepticPeople) color = config!!.lookColor.toJavaColor()
                 drawSquareTwo(ring.x, ring.y + 0.05, ring.z, ring.width.toDouble(), ring.width.toDouble(), color, 4f, phase = false, relocate = true)
-                drawSquareTwo(ring.x, ring.y + ring.height / 2, ring.z, ring.width.toDouble(), ring.width.toDouble(), color, 4f, phase = false, relocate = true)
-                drawSquareTwo(ring.x, ring.y + ring.height, ring.z, ring.width.toDouble(), ring.width.toDouble(), color, 4f, phase = false, relocate = true)
+                drawSquareTwo(ring.x, ring.y + ring.height / 2, ring.z, ring.width.toDouble(), ring.width.toDouble(),
+                    color, 4f, phase = false, relocate = true)
+                drawSquareTwo(ring.x, ring.y + ring.height, ring.z, ring.width.toDouble(), ring.width.toDouble(),
+                    color, 4f, phase = false, relocate = true)
         }
     }
 
     @SubscribeEvent
-    fun onRenderWorld(event: RenderWorldLastEvent) {
+     fun onRenderWorld(event: RenderWorldLastEvent) {
         if (!config!!.autoP3Active || !inp3) return
         val playerX = mc.renderManager.viewerPosX
         val playerY = mc.renderManager.viewerPosY
@@ -110,6 +136,16 @@ object AutoP3 {
                 if (ring.looking == true) rotate(ring.yaw, ring.pitch)
                 if (ring.stopping == true) stopVelo()
                 if (ring.walking == true) walk()
+                if (ring.waiting == true && shouldWait) {
+                    ring.active = true
+                    if (!waiting) {
+                        scheduleTask (ring.wait!!) { shouldWait = false }
+                        waiting = true
+                    }
+                    return
+                }
+                shouldWait = true
+                waiting = false
                 when (ring.type) {
                     "walk" -> {
                         walk()
@@ -180,10 +216,30 @@ object AutoP3 {
                         toggleEdging()
                         modMessage("Edging")
                     }
+                    "wait" -> {
+                        modMessage("Waiting")
+                        var delay = ring.delay!!.toInt() ?: 19
+
+                        scheduleTask(ring.delay!!.toInt()) {
+                            walk()
+                        }
+                    }
+                    "term" -> {
+                        modMessage("Waiting for term")
+                    }
                     else -> sendChat("Invalid ring: ${ring.type}")
             }
             }
         }
+    }
+
+    @SubscribeEvent
+    fun onTermOpen(event: ReceivePacketEvent) {
+        if (!walkOnTermOpen) return
+        if (event.packet !is S2DPacketOpenWindow) return
+        walk()
+        walkOnTermOpen = false
+        modMessage("Term found")
     }
 
 
@@ -222,7 +278,9 @@ object P3Command : CommandBase() {
                         "block",
                         "edge",
                         "vclip",
-                        "jump"
+                        "jump",
+                        "wait",
+                        "term"
                     ).contains((type))
                 ) {
                     modMessage("Invalid ring!")
@@ -241,7 +299,7 @@ object P3Command : CommandBase() {
                 args.drop(2).forEachIndexed { _, arg ->
                     when {
                         arg.startsWith("h") -> toPush.height = arg.slice(1 until arg.length).toFloat()
-                        arg.startsWith("w") && arg != "walk" -> toPush.width = arg.slice(1 until arg.length).toFloat()
+                        arg.startsWith("w")  && !arg.startsWith("wait:") && arg != "walk" -> toPush.width = arg.slice(1 until arg.length).toFloat()
                         arg == "stop" -> toPush.stopping = true
                         arg == "look" -> toPush.looking = true
                         arg == "walk" -> toPush.walking = true
@@ -250,6 +308,11 @@ object P3Command : CommandBase() {
                             val delay = arg.slice(6 until arg.length).toInt()
                             toPush.delaying = true
                             toPush.delay = delay
+                        }
+                        arg.startsWith("wait:") -> {
+                            val wait = arg.slice(5 until arg.length).toInt()
+                            toPush.waiting = true
+                            toPush.wait = wait
                         }
                     }
                 }
@@ -372,6 +435,8 @@ object RingManager {
             allrings = gson.fromJson(file.readText(), object : TypeToken<List<Ring>>() {}.type)
             rings = allrings.filter { it.route == config!!.selectedRoute }.toMutableList()
         }
+        file.parentFile.mkdirs()
+        file.writeText("[]")
     }
 
     fun saveRings() {
@@ -382,6 +447,8 @@ object RingManager {
                 lookY = ring.lookY.takeUnless { it == 1000.0 },
                 lookZ = ring.lookZ.takeUnless { it == 1000.0 },
                 depth = ring.depth.takeUnless { it == 1000f },
+                wait = ring.wait.takeUnless { it == 1000 },
+                waiting = ring.waiting.takeUnless { it == false },
                 delaying = ring.delaying.takeUnless { it == false },
                 stopping = ring.stopping.takeUnless { it == false },
                 walking = ring.walking.takeUnless { it == false },
@@ -395,6 +462,11 @@ object RingManager {
     @SubscribeEvent
     fun onLoad(event: WorldEvent.Load) {
         loadRings()
+    }
+
+    @SubscribeEvent
+    fun onUnload(event: WorldEvent.Unload) {
+        inp3 = false
     }
 }
 data class Ring(
@@ -418,5 +490,7 @@ data class Ring(
     var walking: Boolean? = null,
     var silent: Boolean? = null,
     var delaying: Boolean? = null,
-    var delay: Int? = null
+    var delay: Int? = null,
+    var waiting: Boolean? = null,
+    var wait: Int? = null
 )

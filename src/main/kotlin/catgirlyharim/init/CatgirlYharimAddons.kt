@@ -2,11 +2,13 @@ package catgirlyharim.init
 
 import catgirlyharim.init.config.MyConfig
 import catgirlyharim.init.features.AutoP3
+import catgirlyharim.init.features.BossEsp
 import catgirlyharim.init.features.PearlClip
 import catgirlyharim.init.features.PearlClipCommand
 import catgirlyharim.init.features.RingManager
 import catgirlyharim.init.features.Simulation
 import catgirlyharim.init.features.StormClip
+import catgirlyharim.init.features.TerminalEsp
 import catgirlyharim.init.features.petKeyBinds
 import catgirlyharim.init.utils.*
 import net.minecraft.client.Minecraft
@@ -76,7 +78,9 @@ class CatgirlYharim {
             RingManager,
             PearlClip,
             StormClip,
-            petKeyBinds
+            petKeyBinds,
+            BossEsp,
+            TerminalEsp,
         ).forEach(MinecraftForge.EVENT_BUS::register)
 
     }
