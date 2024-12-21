@@ -49,7 +49,7 @@ object Utils {
         if (!mc.isCallingFromMinecraftThread) mc.addScheduledTask(run) else run()
     }
 
-    fun modMessage(message: Any?, prefix: String = "§0[§6Yharim§0] §8»§r ", chatStyle: ChatStyle? = null) {
+    fun modMessage(message: Any?, prefix: String = "§0[§6AutoP3§0] §8»§r ", chatStyle: ChatStyle? = null) {
         val chatComponent = ChatComponentText("$prefix$message")
         chatStyle?.let { chatComponent.setChatStyle(it) } // Set chat style using setChatStyle method
         runOnMCThread { mc.thePlayer?.addChatMessage(chatComponent) }

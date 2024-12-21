@@ -26,7 +26,7 @@ class CgyCommands : CommandBase() {
 
     override fun getCommandAliases(): List<String> {
         return listOf(
-            "cgyforge"
+            "autop3"
         )
     }
 
