@@ -31,7 +31,6 @@ import catgirlyharim.init.utils.lavaClip.toggleLavaClip
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.delay
 import net.minecraft.command.CommandBase
 import net.minecraft.command.ICommandSender
 import net.minecraft.event.ClickEvent
@@ -54,8 +53,6 @@ object AutoP3 {
     var inp3 = false
     var cooldown = false
     var walkOnTermOpen = false
-    var shouldWait = true
-    var waiting = false
 
     @SubscribeEvent
     fun onLoad(event: WorldEvent.Unload) {
@@ -75,11 +72,9 @@ object AutoP3 {
             config!!.autoP3Active = true
             if (config!!.onP3Start) config!!.selectedRoute = config!!.P3StartRoute
             loadRings()
-            //modMessage("P3 started!")
         }
         if (message.contains("[BOSS] Necron: All this, for nothing...")) {
             inp3 = false
-            //modMessage("P3 ended!")
         }
     }
 
@@ -87,41 +82,37 @@ object AutoP3 {
     fun onRenderRing(event: RenderWorldLastEvent) {
         if (!config!!.autoP3Active || !inp3) return
         rings.forEach{ring ->
-            if (ring.route != config!!.selectedRoute || !ring.active) return
-            if (distanceToPlayer(ring.x, ring.y,ring.z) > config!!.renderDistance) return
-            var color = Color(1,1,1,1)
-            color = when (ring.type) {
-                "look" -> config!!.lookColor.toJavaColor()
-                "stop" -> config!!.stopColor.toJavaColor()
-                "boom" -> config!!.boomColor.toJavaColor()
-                "jump" -> config!!.jumpColor.toJavaColor()
-                "hclip" -> config!!.hclipColor.toJavaColor()
-                "bonzo" -> config!!.bonzoColor.toJavaColor()
-                "vclip" -> config!!.vclipColor.toJavaColor()
-                "block" -> config!!.blockColor.toJavaColor()
-                "edge" -> config!!.edgeColor.toJavaColor()
-                "walk" -> config!!.walkColor.toJavaColor()
-                "wait" -> config!!.waitColor.toJavaColor()
-                "term" -> config!!.termColor.toJavaColor()
-                else -> config!!.walkColor.toJavaColor()
-            }
-            if (config!!.fuckEpilepticPeople) color = config!!.lookColor.toJavaColor()
+            if (!ring.active) return@forEach
+            val color = when (ring.type) {
+                    "look" -> config!!.lookColor.toJavaColor()
+                    "stop" -> config!!.stopColor.toJavaColor()
+                    "boom" -> config!!.boomColor.toJavaColor()
+                    "jump" -> config!!.jumpColor.toJavaColor()
+                    "hclip" -> config!!.hclipColor.toJavaColor()
+                    "bonzo" -> config!!.bonzoColor.toJavaColor()
+                    "vclip" -> config!!.vclipColor.toJavaColor()
+                    "block" -> config!!.blockColor.toJavaColor()
+                    "edge" -> config!!.edgeColor.toJavaColor()
+                    "walk" -> config!!.walkColor.toJavaColor()
+                    "wait" -> config!!.waitColor.toJavaColor()
+                    "term" -> config!!.termColor.toJavaColor()
+                    else -> config!!.walkColor.toJavaColor()
+                }
                 drawSquareTwo(ring.x, ring.y + 0.05, ring.z, ring.width.toDouble(), ring.width.toDouble(), color, 4f, phase = false, relocate = true)
-                drawSquareTwo(ring.x, ring.y + ring.height / 2, ring.z, ring.width.toDouble(), ring.width.toDouble(),
-                    color, 4f, phase = false, relocate = true)
-                drawSquareTwo(ring.x, ring.y + ring.height, ring.z, ring.width.toDouble(), ring.width.toDouble(),
-                    color, 4f, phase = false, relocate = true)
+                drawSquareTwo(ring.x, ring.y + ring.height / 2, ring.z, ring.width.toDouble(), ring.width.toDouble(),color, 4f, phase = false, relocate = true)
+                drawSquareTwo(ring.x, ring.y + ring.height, ring.z, ring.width.toDouble(), ring.width.toDouble(), color, 4f, phase = false, relocate = true)
         }
     }
 
+    var shouldWait = true
+
     @SubscribeEvent
-     fun onRenderWorld(event: RenderWorldLastEvent) {
-        if (!config!!.autoP3Active || !inp3) return
+    fun onRenderWorld(event: RenderWorldLastEvent) {
+        if (!config!!.autoP3Active || !inp3 || config!!.editmode) return
         val playerX = mc.renderManager.viewerPosX
         val playerY = mc.renderManager.viewerPosY
         val playerZ = mc.renderManager.viewerPosZ
         rings.forEach { ring ->
-            if (ring.route != config!!.selectedRoute) return@forEach
             val distanceX = abs(playerX - ring.x)
             val distanceY = (playerY - ring.y)
             val distanceZ = abs(playerZ - ring.z)
@@ -131,36 +122,47 @@ object AutoP3 {
             }
 
             if (!ring.active || config!!.editmode || cooldown) return@forEach
+
             if (distanceX < (ring.width / 2) && distanceY < (ring.height) && distanceY >= 0 && distanceZ < (ring.width / 2)) {
                 ring.active = false
-                if (ring.looking == true) rotate(ring.yaw, ring.pitch)
-                if (ring.stopping == true) stopVelo()
-                if (ring.walking == true) walk()
-                if (ring.waiting == true && shouldWait) {
-                    ring.active = true
-                    if (!waiting) {
-                        scheduleTask (ring.wait!!) { shouldWait = false }
-                        waiting = true
+                when (true) {
+                    ring.looking -> rotate(ring.yaw, ring.pitch)
+                    ring.walking -> walk()
+                    ring.stopping -> {
+                        mc.thePlayer.setVelocity(0.0, mc.thePlayer.motionY, 0.0)
+                        stopVelo()
                     }
-                    return
+                    ring.waiting -> {
+                        if (shouldWait) {
+                            shouldWait = false
+                            scheduleTask(ring.wait!!) {
+                                ring.active = true
+                            }
+                            scheduleTask(ring.wait!! + 2) {
+                                shouldWait = true
+                            }
+                            return
+                        }
+                    }
+                    else -> {}
                 }
-                shouldWait = true
-                waiting = false
+
                 when (ring.type) {
                     "walk" -> {
-                        walk()
                         modMessage("Walking")
+                        walk()
                     }
                     "look" -> {
                         modMessage("Looking")
                         rotate(ring.yaw, ring.pitch)
                     }
                     "stop" -> {
+                        modMessage("Stopping")
                         stopMovement()
                         stopVelo()
-                        modMessage("Stopping")
                     }
                     "boom" ->  {
+                        modMessage("Exploding")
                         rotate(ring.yaw, ring.pitch)
                         swapFromName("boom")
                         if(ring.delaying == true) {
@@ -168,7 +170,6 @@ object AutoP3 {
                         } else {
                             scheduleTask(4) { leftClick()}
                         }
-                        modMessage("Exploding")
                     }
                     "jump" -> {
                         jump()
@@ -216,16 +217,9 @@ object AutoP3 {
                         toggleEdging()
                         modMessage("Edging")
                     }
-                    "wait" -> {
-                        modMessage("Waiting")
-                        var delay = ring.delay!!.toInt() ?: 19
-
-                        scheduleTask(ring.delay!!.toInt()) {
-                            walk()
-                        }
-                    }
                     "term" -> {
                         modMessage("Waiting for term")
+                        walkOnTermOpen = true
                     }
                     else -> sendChat("Invalid ring: ${ring.type}")
             }
@@ -245,7 +239,7 @@ object AutoP3 {
 
 object P3Command : CommandBase() {
     override fun getCommandName(): String {
-        return "p3"
+        return "ring"
     }
 
     override fun getCommandAliases(): List<String> {
@@ -268,19 +262,7 @@ object P3Command : CommandBase() {
         when (args[0]) {
             "add" -> {
                 val type = args[1]
-                if (!arrayListOf(
-                        "walk",
-                        "look",
-                        "stop",
-                        "bonzo",
-                        "boom",
-                        "hclip",
-                        "block",
-                        "edge",
-                        "vclip",
-                        "jump",
-                        "wait",
-                        "term"
+                if (!arrayListOf("walk", "look", "stop", "bonzo", "boom", "hclip", "block", "edge", "vclip", "jump", "term"
                     ).contains((type))
                 ) {
                     modMessage("Invalid ring!")
@@ -338,6 +320,7 @@ object P3Command : CommandBase() {
                 inp3 = true
                 config!!.autoP3Active = true
                 modMessage("P3 started!")
+                loadRings()
             }
             "stop" -> {
                 inp3 = false
@@ -401,11 +384,10 @@ object P3Command : CommandBase() {
                 saveRings()
                 loadRings()
             }
-            "load" -> {
+            "loadroute" -> {
                 val route = args[1]
                 config!!.selectedRoute = route
                 modMessage("Loaded route $route")
-                saveRings()
                 loadRings()
             }
             "on" -> {
@@ -417,7 +399,7 @@ object P3Command : CommandBase() {
                 modMessage("AutoP3 off!")
             }
             "save" -> saveRings()
-            "loadroute" -> loadRings()
+            "load" -> loadRings()
             else -> modMessage("Invalid argument!")
         }
     }
