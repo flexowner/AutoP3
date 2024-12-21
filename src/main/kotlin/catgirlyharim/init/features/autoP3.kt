@@ -388,6 +388,7 @@ object P3Command : CommandBase() {
                 val route = args[1]
                 config!!.selectedRoute = route
                 modMessage("Loaded route $route")
+                saveRings()
                 loadRings()
             }
             "on" -> {
@@ -416,9 +417,10 @@ object RingManager {
         if (file.exists()) {
             allrings = gson.fromJson(file.readText(), object : TypeToken<List<Ring>>() {}.type)
             rings = allrings.filter { it.route == config!!.selectedRoute }.toMutableList()
+        } else {
+            file.parentFile.mkdirs()
+            file.writeText("[]")
         }
-        file.parentFile.mkdirs()
-        file.writeText("[]")
     }
 
     fun saveRings() {
