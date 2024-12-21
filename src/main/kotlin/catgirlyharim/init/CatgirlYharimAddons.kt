@@ -81,6 +81,7 @@ class CatgirlYharim {
             petKeyBinds,
             BossEsp,
             TerminalEsp,
+            DungeonLocation
         ).forEach(MinecraftForge.EVENT_BUS::register)
 
     }
