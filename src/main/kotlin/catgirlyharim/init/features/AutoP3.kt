@@ -69,7 +69,7 @@ object AutoP3 {
 
         if (msg.contains("[BOSS] Maxor")) {
             if (config!!.onBossStart) config!!.selectedRoute = config!!.BossStartRoute
-            //loadRings()
+            loadRings()
             inp3 = true
         }
         if (msg.contains("[BOSS] Storm: I should have known that I stood no chance.")) {
@@ -79,7 +79,7 @@ object AutoP3 {
             loadRings()
         }
         if (msg.contains("[BOSS] Necron: All this, for nothing...")) {
-            AutoP3.inp3 = false
+            inp3 = false
         }
     }
 
