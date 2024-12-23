@@ -85,7 +85,8 @@ class CatgirlYharim {
             BossEsp,
             TerminalEsp,
             EventDispatcher,
-            VerticalJerry
+            VerticalJerry,
+            DungeonLocation
         ).forEach(MinecraftForge.EVENT_BUS::register)
 
     }
