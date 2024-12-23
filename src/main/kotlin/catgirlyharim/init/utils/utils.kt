@@ -12,6 +12,8 @@ import catgirlyharim.init.utils.WorldRenderUtils.renderText
 import net.minecraft.block.Block
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.settings.KeyBinding
+import net.minecraft.event.ClickEvent
+import net.minecraft.event.HoverEvent
 import net.minecraft.item.ItemStack
 import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
 import net.minecraft.network.play.client.C0EPacketClickWindow
@@ -21,6 +23,8 @@ import net.minecraft.util.ChatComponentText
 import net.minecraft.util.ChatStyle
 import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.client.event.RenderWorldLastEvent
+import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.fml.common.eventhandler.Event
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import java.awt.Color.*
 import kotlin.math.*
@@ -53,6 +57,18 @@ object Utils {
         val chatComponent = ChatComponentText("$prefix$message")
         chatStyle?.let { chatComponent.setChatStyle(it) } // Set chat style using setChatStyle method
         runOnMCThread { mc.thePlayer?.addChatMessage(chatComponent) }
+    }
+
+    fun Event.postAndCatch(): Boolean {
+        return runCatching {
+            MinecraftForge.EVENT_BUS.post(this)
+        }.onFailure {
+            it.printStackTrace()
+            //logger.error("An error occurred", it)
+            val style = ChatStyle()
+            style.chatClickEvent = ClickEvent(ClickEvent.Action.RUN_COMMAND, "/od copy ```${it.stackTraceToString().lineSequence().take(10).joinToString("\n")}```") // odon clint
+            style.chatHoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, ChatComponentText("§6Click to copy the error to your clipboard."))
+            modMessage(" Caught an ${it::class.simpleName ?: "error"} at ${this::class.simpleName}. §cPlease click this message to copy and send it in the Odin discord!")}.getOrDefault(isCanceled)
     }
 
     //player

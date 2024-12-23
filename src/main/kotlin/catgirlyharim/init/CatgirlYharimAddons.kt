@@ -1,7 +1,9 @@
 package catgirlyharim.init
 
 import catgirlyharim.init.config.MyConfig
+import catgirlyharim.init.events.EventDispatcher
 import catgirlyharim.init.features.AutoP3
+import catgirlyharim.init.features.AutoP3Commands
 import catgirlyharim.init.features.BossEsp
 import catgirlyharim.init.features.PearlClip
 import catgirlyharim.init.features.PearlClipCommand
@@ -9,6 +11,7 @@ import catgirlyharim.init.features.RingManager
 import catgirlyharim.init.features.Simulation
 import catgirlyharim.init.features.StormClip
 import catgirlyharim.init.features.TerminalEsp
+import catgirlyharim.init.features.VerticalJerry
 import catgirlyharim.init.features.petKeyBinds
 import catgirlyharim.init.utils.*
 import net.minecraft.client.Minecraft
@@ -56,7 +59,7 @@ class CatgirlYharim {
         config = MyConfig()
         listOf(
             CgyCommands(),
-            AutoP3.P3Command,
+            AutoP3Commands,
             PearlClipCommand()
         ).forEach {
             ClientCommandHandler.instance.registerCommand((it))
@@ -81,6 +84,8 @@ class CatgirlYharim {
             petKeyBinds,
             BossEsp,
             TerminalEsp,
+            EventDispatcher,
+            VerticalJerry,
             DungeonLocation
         ).forEach(MinecraftForge.EVENT_BUS::register)
 
