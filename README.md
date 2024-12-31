@@ -1,1 +1,1 @@
-north korea mod
+AMERICAN mod
